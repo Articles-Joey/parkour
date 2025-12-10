@@ -2,6 +2,8 @@
 
 ...
 
+![Preview](public/img/preview.webp)
+
 ## Getting Started
 
 First, run the development server:
