@@ -9,6 +9,7 @@ import { ModelKennyNLMiniGolfFlagRed } from "@/components/Models/flag-red";
 import { degToRad } from "three/src/math/MathUtils";
 import SwingingBall from "./SwingingBall";
 import RopeSwing from "./RopeSwing";
+import { useStore } from "@/hooks/useStore";
 
 function GameCanvas(props) {
 
@@ -19,6 +20,8 @@ function GameCanvas(props) {
         controlType: state.controlType,
         debug: state.debug
     }))
+
+    const darkMode = useStore(state => state.darkMode)
 
     let gameContent = (
         <>
@@ -255,7 +258,7 @@ function GameCanvas(props) {
         // camera={{ position: [-10, 40, 40], fov: 50 }}
         >
 
-            <Sky sunPosition={[100, 100, 20]} />
+            <Sky sunPosition={[100, darkMode ? -10 : 10, 20]} />
             <ambientLight intensity={1} />
 
             {controlType == "Mouse and Keyboard" &&
