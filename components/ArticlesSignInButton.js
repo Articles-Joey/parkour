@@ -1,3 +1,5 @@
+"use client";
+import Box from "@mui/material/Box";
 import Script from "next/script";
 import { useEffect } from "react";
 import { useStore } from "@/hooks/useStore";
@@ -15,7 +17,7 @@ export default function ArticlesSignInButton({ style }) {
     }, []);
 
     return (
-        <div>
+        <Box>
 
             <Script
                 src={process.env.NODE_ENV === "development" ?
@@ -39,24 +41,24 @@ export default function ArticlesSignInButton({ style }) {
                 }
             />
 
-            <div className={!darkMode ? "d-none" : ""}>
-                <div
+            <Box sx={{ display: darkMode ? "block" : "none" }}>
+                <Box
                     className={`articles-media-sign-in dark-mode articles-media-sign-in--${style.toLowerCase()}`}
                     data-onsuccess="onSignIn"
                 >
                     {/* Continue with Articles Media */}
-                </div>
-            </div>
-            <div className={darkMode ? "d-none" : ""}>
-                <div
+                </Box>
+            </Box>
+            <Box sx={{ display: darkMode ? "none" : "block" }}>
+                <Box
                     className={`articles-media-sign-in articles-media-sign-in--${style.toLowerCase()}`}
                     data-onsuccess="onSignIn"
                 >
                     {/* Continue with Articles Media */}
-                </div>
-            </div>
+                </Box>
+            </Box>
 
 
-        </div>
+        </Box>
     );
 }

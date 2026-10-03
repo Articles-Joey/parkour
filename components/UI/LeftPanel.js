@@ -1,235 +1,141 @@
-"use client"
-import { useState, useEffect, useContext, useRef } from 'react';
+"use client";
 
-import Link from 'next/link'
-import dynamic from 'next/dynamic'
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Box from "@mui/material/Box";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import IconButton from "@mui/material/IconButton";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import BugReportIcon from "@mui/icons-material/BugReport";
+import CameraAltIcon from "@mui/icons-material/CameraAlt";
+import RefreshIcon from "@mui/icons-material/Refresh";
+import ArticlesButton from "@/components/UI/Button";
+import { useParkourStore } from "@/hooks/useParkourStore";
+import { useStore } from "@/hooks/useStore";
+import GameMenuPrimaryButtonGroup from "@articles-media/articles-dev-box/GameMenuPrimaryButtonGroup";
 
-import ArticlesButton from '@/components/UI/Button';
-import useFullscreen from '@articles-media/articles-dev-box/useFullscreen';
-import { useParkourStore } from '@/hooks/useParkourStore';
-import { Dropdown, DropdownButton } from 'react-bootstrap';
-import { useStore } from '@/hooks/useStore';
-
-import GameMenuPrimaryButtonGroup from '@articles-media/articles-dev-box/GameMenuPrimaryButtonGroup';
+const cardSx = { bgcolor: "game.card", backgroundImage: "none", border: 1, borderColor: "divider", fontSize: "0.875rem" };
+const sectionSx = { p: "0.5rem", borderBottom: 1, borderColor: "divider" };
 
 export default function LeftPanelContent() {
-
-    const { isFullscreen, requestFullscreen, exitFullscreen } = useFullscreen();
-
-    const [map, setMap] = useState("New");
-
-    const [sceneKey, setSceneKey] = useState(0);
-
-    const reloadScene = () => {
-        setSceneKey((prevKey) => prevKey + 1);
-    };
-
-    const {
-        resetCheckpoints,
-        cameraMode,
-        setCameraMode,
-        debug,
-        setDebug
-    } = useParkourStore(state => ({
-        resetCheckpoints: state.resetCheckpoints,
-        cameraMode: state.cameraMode,
-        setCameraMode: state.setCameraMode,
-        debug: state.debug,
-        setDebug: state.setDebug,
-    }));
-
+    const [debugAnchor, setDebugAnchor] = useState(null);
+    const [cameraAnchor, setCameraAnchor] = useState(null);
+    const resetCheckpoints = useParkourStore((state) => state.resetCheckpoints);
+    const cameraMode = useParkourStore((state) => state.cameraMode);
+    const setCameraMode = useParkourStore((state) => state.setCameraMode);
+    const debug = useParkourStore((state) => state.debug);
+    const setDebug = useParkourStore((state) => state.setDebug);
     const position = useParkourStore((state) => state.position);
     const checkpoints = useParkourStore((state) => state.checkpoints);
     const api = useParkourStore((state) => state.api);
-    // const resetCheckpoints = useParkourStore((state) => state.resetCheckpoints);
 
     return (
-        <div className="w-100">
-
-            <div className="card card-articles card-sm">
-
-                <div className="card-body d-flex flex-wrap">
-
-                    <GameMenuPrimaryButtonGroup
-                        useStore={useStore}
-                        type="GameMenu"
-                    />
-
-                </div>
-
-                <div className='card-body d-flex flex-wrap'>
-
-                    <div className='w-50'>
-                        <DropdownButton
-                            variant="articles w-100"
-                            size='sm'
-                            id="dropdown-basic-button"
-                            className="dropdown-articles"
-                            title={
-                                <span>
-                                    <i className="fad fa-bug"></i>
-                                    <span>Debug </span>
-                                    <span>{debug ? 'On' : 'Off'}</span>
-                                </span>
-                            }
+        <Box sx={{ width: "100%" }}>
+            <Card sx={cardSx}>
+                <CardContent sx={{ p: "0.5rem", display: "flex", flexWrap: "wrap" }}>
+                    <GameMenuPrimaryButtonGroup useStore={useStore} type="GameMenu" useRouter={useRouter} />
+                </CardContent>
+                <CardContent sx={{ p: "0.5rem", "&:last-child": { pb: "0.5rem" }, display: "flex", flexWrap: "wrap" }}>
+                    <Box sx={{ width: "50%" }}>
+                        <ArticlesButton
+                            small
+                            sx={{ width: "100%" }}
+                            startIcon={<BugReportIcon />}
+                            aria-haspopup="menu"
+                            aria-controls={debugAnchor ? "debug-menu" : undefined}
+                            aria-expanded={Boolean(debugAnchor)}
+                            onClick={(event) => setDebugAnchor(event.currentTarget)}
                         >
-
-                            <div style={{ maxHeight: '600px', overflowY: 'auto', width: '200px' }}>
-
-                                {[
-                                    false,
-                                    true
-                                ]
-                                    .map(location =>
-                                        <Dropdown.Item
-                                            key={location}
-                                            onClick={() => {
-                                                setDebug(location)
-                                            }}
-                                            className="d-flex justify-content-between"
-                                        >
-                                            {location ? 'True' : 'False'}
-                                        </Dropdown.Item>
-                                    )}
-
-                            </div>
-
-                        </DropdownButton>
-                    </div>
-
-                    <div className='w-50'>
-                        <DropdownButton
-                            variant="articles w-100"
-                            size='sm'
-                            id="dropdown-basic-button"
-                            className="dropdown-articles"
-                            title={
-                                <span>
-                                    <i className="fad fa-camera"></i>
-                                    <span>Camera</span>
-                                </span>
-                            }
+                            Debug {debug ? "On" : "Off"}
+                        </ArticlesButton>
+                        <Menu
+                            id="debug-menu"
+                            anchorEl={debugAnchor}
+                            open={Boolean(debugAnchor)}
+                            onClose={() => setDebugAnchor(null)}
+                            slotProps={{ paper: { sx: { maxHeight: 600, width: 200 } } }}
                         >
-
-                            <div style={{ maxHeight: '600px', overflowY: 'auto', width: '200px' }}>
-
-                                {[
-                                    {
-                                        name: 'Free',
-                                    },
-                                    {
-                                        name: 'Player',
-                                    }
-                                ]
-                                    .map(location =>
-                                        <Dropdown.Item
-                                            key={location.name}
-                                            active={cameraMode == location.name}
-                                            onClick={() => {
-                                                setCameraMode(location.name)
-                                                // setShowMenu(false)
-                                            }}
-                                            className="d-flex justify-content-between"
-                                        >
-                                            <i className="fad fa-camera"></i>
-                                            {location.name}
-                                        </Dropdown.Item>
-                                    )}
-
-                            </div>
-
-                        </DropdownButton>
-                    </div>
-
-                </div>
-
-            </div>
-
-
-
-            <div className="card">
-
-                <div className="card-header flex-header">
-                    <div>Debug</div>
-                    <div
-                        className="badge bg-articles badge-hover"
-                        onClick={() => {
-                            resetCheckpoints()
-                        }}
-                    >
-                        <i className="fad fa-redo me-0"></i>
-                    </div>
-                </div>
-
-                <div className="card-body p-1  d-flex justify-content-center border-bottom">
-
-                    <ArticlesButton
-                        small
-                        onClick={() => {
-                            api?.position.set(
-                                0,
-                                5,
-                                0,
-                            );
-                        }}
-                    >
-                        Start
-                    </ArticlesButton>
-
-                    {[...Array(4)].map((obj, i) => {
-
-                        let checkpoint = checkpoints.find(obj => obj.name == (i + 1))
-
+                            {[false, true].map((value) => (
+                                <MenuItem key={String(value)} selected={debug === value} onClick={() => { setDebug(value); setDebugAnchor(null); }}>
+                                    {value ? "True" : "False"}
+                                </MenuItem>
+                            ))}
+                        </Menu>
+                    </Box>
+                    <Box sx={{ width: "50%" }}>
+                        <ArticlesButton
+                            small
+                            sx={{ width: "100%" }}
+                            startIcon={<CameraAltIcon />}
+                            aria-haspopup="menu"
+                            aria-controls={cameraAnchor ? "camera-menu" : undefined}
+                            aria-expanded={Boolean(cameraAnchor)}
+                            onClick={(event) => setCameraAnchor(event.currentTarget)}
+                        >
+                            Camera
+                        </ArticlesButton>
+                        <Menu
+                            id="camera-menu"
+                            anchorEl={cameraAnchor}
+                            open={Boolean(cameraAnchor)}
+                            onClose={() => setCameraAnchor(null)}
+                            slotProps={{ paper: { sx: { maxHeight: 600, width: 200 } } }}
+                        >
+                            {["Free", "Player"].map((name) => (
+                                <MenuItem key={name} selected={cameraMode === name} onClick={() => { setCameraMode(name); setCameraAnchor(null); }} sx={{ display: "flex", justifyContent: "space-between" }}>
+                                    <CameraAltIcon fontSize="small" />
+                                    {name}
+                                </MenuItem>
+                            ))}
+                        </Menu>
+                    </Box>
+                </CardContent>
+            </Card>
+            <Card sx={cardSx}>
+                <Box sx={{ ...sectionSx, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <Box>Debug</Box>
+                    <IconButton size="small" aria-label="Reset checkpoints" onClick={resetCheckpoints}>
+                        <RefreshIcon fontSize="small" />
+                    </IconButton>
+                </Box>
+                <Box sx={{ ...sectionSx, p: "0.25rem", display: "flex", justifyContent: "center" }}>
+                    <ArticlesButton small onClick={() => api?.position.set(0, 5, 0)}>Start</ArticlesButton>
+                    {Array.from({ length: 4 }, (_, index) => {
+                        const checkpoint = checkpoints.find((item) => item.name == index + 1);
                         return (
                             <ArticlesButton
-                                key={i}
+                                key={index}
                                 small
-                                // disabled={checkpoint?.locked}
                                 onClick={() => {
-                                    console.log("Teleport to checkpoint", checkpoint?.location)
-                                    api.position.set(
+                                    api?.position.set(
                                         checkpoint?.location[0],
                                         checkpoint?.location[1],
                                         checkpoint?.location[2],
                                     );
                                 }}
                             >
-                                {i + 1}
+                                {index + 1}
                             </ArticlesButton>
-                        )
+                        );
                     })}
-
-                    <ArticlesButton
-                        small
-                        disabled
-                    >
-                        End
-                    </ArticlesButton>
-
-                </div>
-
-                <div className="card-body border-bottom">
-                    <div>{position?.[0].toFixed(2)}</div>
-                    <div>{position?.[1].toFixed(2)}</div>
-                    <div>{position?.[2].toFixed(2)}</div>
-                </div>
-
-                <div className="card-body">
-                    {checkpoints.map((checkpoint, i) => {
-                        return (
-                            <div
-                                key={i}
-                                className='mb-2'
-                            >
-                                <div className='small'>{checkpoint.name}</div>
-                                <div>{checkpoint.locked ? 'Locked' : 'Unlocked'}</div>
-                            </div>
-                        )
-                    })}
-                </div>
-
-            </div>
-
-        </div>
+                    <ArticlesButton small disabled>End</ArticlesButton>
+                </Box>
+                <Box sx={sectionSx}>
+                    <Box>{position?.[0].toFixed(2)}</Box>
+                    <Box>{position?.[1].toFixed(2)}</Box>
+                    <Box>{position?.[2].toFixed(2)}</Box>
+                </Box>
+                <Box sx={{ p: "0.5rem" }}>
+                    {checkpoints.map((checkpoint, index) => (
+                        <Box key={index} sx={{ mb: "0.5rem" }}>
+                            <Box sx={{ fontSize: "0.875em" }}>{checkpoint.name}</Box>
+                            <Box>{checkpoint.locked ? "Locked" : "Unlocked"}</Box>
+                        </Box>
+                    ))}
+                </Box>
+            </Card>
+        </Box>
     );
 }

@@ -1,84 +1,43 @@
-import { useEffect, useState, useRef } from "react";
+"use client";
 
-import { Modal } from "react-bootstrap"
-
+import { useCallback, useRef, useState } from "react";
+import Box from "@mui/material/Box";
+import ArticlesModal from "./ArticlesModal";
 import ArticlesButton from "./Button";
 import { useModalNavigation } from "@/hooks/useModalNavigation";
-
 import B from "@articles-media/articles-gamepad-helper/dist/img/Xbox UI/B.svg";
-import { useStore } from "@/hooks/useStore";
 
-export default function InfoModal({
-    show,
-    setShow,
-    credits
-}) {
-
-    const [showModal, setShowModal] = useState(true)
-
-    const darkMode = useStore(state => state.darkMode)
-
+export default function InfoModal({ show = true, setShow }) {
+    const [showModal, setShowModal] = useState(true);
     const elementsRef = useRef([]);
-    useModalNavigation(elementsRef, () => setShowModal(false));
+    const close = useCallback(() => setShowModal(false), []);
+    useModalNavigation(elementsRef, close);
 
     return (
-        <>
-
-            <Modal
-                className="articles-modal games-info-modal"
-                size='md'
-                show={showModal}
-                centered
-                scrollable
-                onExited={() => {
-                    setShow(false)
-                }}
-                onHide={() => {
-                    setShowModal(false)
-                }}
-            >
-
-                <Modal.Header closeButton>
-                    <Modal.Title>Game Info</Modal.Title>
-                </Modal.Header>
-
-                <Modal.Body className="flex-column p-0">
-
-                    <div className="ratio ratio-16x9">
-                        {darkMode ?
-                            <img src={"img/preview.webp"}></img>
-                            :
-                            <img src={"img/preview.webp"}></img>
-                        }
-                    </div>
-
-                    <div className="p-3">
-                        ...
-                    </div>
-
-                </Modal.Body>
-
-                <Modal.Footer className="justify-content-between">
-
-                    <div></div>
-
+        <ArticlesModal
+            show={show && showModal}
+            setShow={setShow}
+            title="Game Info"
+            contentSx={{ p: 0 }}
+            footerOverride={(setOpen) => (
+                <>
+                    <Box />
                     <ArticlesButton
-                        ref={el => elementsRef.current[0] = el}
+                        ref={(element) => { elementsRef.current[0] = element; }}
                         variant="outline-dark"
-                        onClick={() => {
-                            setShow(false)
-                        }}
-                        className="d-flex align-items-center"
+                        onClick={() => setOpen(false)}
+                        sx={{ display: "flex", alignItems: "center" }}
                     >
-                        <img src={B.src} className="controller-only me-1" alt="Close" />
+                        <Box component="img" src={B.src} className="controller-only" alt="" sx={{ mr: "0.25rem" }} />
                         Close
                     </ArticlesButton>
-
-                </Modal.Footer>
-
-            </Modal>
-
-        </>
-    )
-
+                </>
+            )}
+        >
+            <Box sx={{ aspectRatio: "16 / 9", position: "relative" }}>
+                <Box component="img" src="/img/preview.webp" alt="Game preview" sx={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            </Box>
+            <Box sx={{ p: "1rem" }}>...</Box>
+        </ArticlesModal>
+    );
 }
