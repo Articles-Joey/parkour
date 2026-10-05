@@ -7,6 +7,8 @@ import useFullscreen from "@articles-media/articles-dev-box/useFullscreen";
 import GameMenu from "@articles-media/articles-dev-box/GameMenu";
 import { useStore } from "@/hooks/useStore";
 import LeftPanelContent from "@/components/UI/LeftPanel";
+import CameraZoomIndicator from "@/components/UI/CameraZoomIndicator";
+import RopeSwingIndicator from "@/components/UI/RopeSwingIndicator";
 
 const GameCanvas = dynamic(() => import("@/components/Game/GameCanvas"), { ssr: false });
 
@@ -83,6 +85,8 @@ export default function ParkourGamePage() {
                     }}
                 >
                     <GameCanvas key={sceneKey} />
+                    <CameraZoomIndicator />
+                    <RopeSwingIndicator />
                 </Box>
             </Box>
         </Box>

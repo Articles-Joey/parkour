@@ -16,20 +16,20 @@ import { useParkourStore } from "@/hooks/useParkourStore";
 import { useStore } from "@/hooks/useStore";
 import GameMenuPrimaryButtonGroup from "@articles-media/articles-dev-box/GameMenuPrimaryButtonGroup";
 
-const cardSx = { bgcolor: "game.card", backgroundImage: "none", border: 1, borderColor: "divider", fontSize: "0.875rem" };
+const cardSx = { border: 1, borderColor: "divider", fontSize: "0.875rem" };
 const sectionSx = { p: "0.5rem", borderBottom: 1, borderColor: "divider" };
 
 export default function LeftPanelContent() {
     const [debugAnchor, setDebugAnchor] = useState(null);
     const [cameraAnchor, setCameraAnchor] = useState(null);
     const resetCheckpoints = useParkourStore((state) => state.resetCheckpoints);
-    const cameraMode = useParkourStore((state) => state.cameraMode);
-    const setCameraMode = useParkourStore((state) => state.setCameraMode);
+    const isThirdPerson = useParkourStore((state) => state.isThirdPerson);
+    const setThirdPerson = useParkourStore((state) => state.setThirdPerson);
     const debug = useParkourStore((state) => state.debug);
     const setDebug = useParkourStore((state) => state.setDebug);
     const position = useParkourStore((state) => state.position);
     const checkpoints = useParkourStore((state) => state.checkpoints);
-    const api = useParkourStore((state) => state.api);
+    const teleportPlayer = useParkourStore((state) => state.teleportPlayer);
 
     return (
         <Box sx={{ width: "100%" }}>
@@ -74,7 +74,7 @@ export default function LeftPanelContent() {
                             aria-expanded={Boolean(cameraAnchor)}
                             onClick={(event) => setCameraAnchor(event.currentTarget)}
                         >
-                            Camera
+                            {isThirdPerson ? "Third person" : "First person"}
                         </ArticlesButton>
                         <Menu
                             id="camera-menu"
@@ -83,8 +83,8 @@ export default function LeftPanelContent() {
                             onClose={() => setCameraAnchor(null)}
                             slotProps={{ paper: { sx: { maxHeight: 600, width: 200 } } }}
                         >
-                            {["Free", "Player"].map((name) => (
-                                <MenuItem key={name} selected={cameraMode === name} onClick={() => { setCameraMode(name); setCameraAnchor(null); }} sx={{ display: "flex", justifyContent: "space-between" }}>
+                            {["First person", "Third person"].map((name, index) => (
+                                <MenuItem key={name} selected={isThirdPerson === (index === 1)} onClick={() => { setThirdPerson(index === 1); setCameraAnchor(null); }} sx={{ display: "flex", justifyContent: "space-between" }}>
                                     <CameraAltIcon fontSize="small" />
                                     {name}
                                 </MenuItem>
@@ -101,7 +101,7 @@ export default function LeftPanelContent() {
                     </IconButton>
                 </Box>
                 <Box sx={{ ...sectionSx, p: "0.25rem", display: "flex", justifyContent: "center" }}>
-                    <ArticlesButton small onClick={() => api?.position.set(0, 5, 0)}>Start</ArticlesButton>
+                    <ArticlesButton small onClick={() => teleportPlayer([0, 5, 0])}>Start</ArticlesButton>
                     {Array.from({ length: 4 }, (_, index) => {
                         const checkpoint = checkpoints.find((item) => item.name == index + 1);
                         return (
@@ -109,11 +109,7 @@ export default function LeftPanelContent() {
                                 key={index}
                                 small
                                 onClick={() => {
-                                    api?.position.set(
-                                        checkpoint?.location[0],
-                                        checkpoint?.location[1],
-                                        checkpoint?.location[2],
-                                    );
+                                    teleportPlayer(checkpoint?.location);
                                 }}
                             >
                                 {index + 1}

@@ -11,14 +11,11 @@ const roboto = Roboto({
 });
 
 export function createAppTheme(mode = "dark") {
-    const cardBackground = mode === "dark" ? "#452a19" : "#955d39";
-
     return createTheme({
         cssVariables: true,
         palette: {
             mode,
             primary: { main: "#f9edcd" },
-            game: { card: cardBackground },
         },
         typography: {
             fontFamily: roboto.style.fontFamily,
@@ -44,7 +41,6 @@ export function createAppTheme(mode = "dark") {
                 styleOverrides: (muiTheme) => ({
                     ...bootstrapCompatibilityTheme.MuiCssBaseline.styleOverrides(muiTheme),
                     ":root": {
-                        "--card-background-override": cardBackground,
                         "--articles-card-font-color": mode === "dark" ? "#fff" : "#212529",
                     },
                     ".stats-overlay": {

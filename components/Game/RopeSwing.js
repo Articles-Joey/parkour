@@ -1,50 +1,93 @@
-import { Debug, Physics, useBox, useCompoundBody, useCylinder, useHingeConstraint, useSphere } from "@react-three/cannon";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { memo, useEffect, useRef } from "react";
-// import { Player } from "./Player";
-// import { Sky } from "@react-three/drei";
-// import { useParkourStore } from "@/hooks/useParkourStore";
-// import FPV from "./FPV";
-// import { ModelKennyNLMiniGolfFlagRed } from "@/components/Games/Assets/Kenny/MiniGolf/flag-red";
-// import { degToRad } from "three/src/math/MathUtils";
+import {
+    CuboidCollider,
+    CylinderCollider,
+    RigidBody,
+    useBeforePhysicsStep,
+} from "@react-three/rapier";
+import { useEffect, useMemo, useRef } from "react";
+import { Quaternion, Vector3 } from "three";
+import { useParkourStore } from "@/hooks/useParkourStore";
+
+const SWING_SPEED = 2;
+const SWING_AMPLITUDE = Math.PI / 6;
 
 export default function RopeSwing({ args, position, rotation }) {
+    const rigidBodyRef = useRef(null);
+    const initialRotation = useRef(null);
+    const elapsedTime = useRef(0);
+    const swingAxis = useMemo(() => new Vector3(0, 0, 1), []);
+    const swingRotation = useMemo(() => new Quaternion(), []);
+    const nextRotation = useMemo(() => new Quaternion(), []);
 
-    const groupRef = useRef();
-    const swingSpeed = 2; // Adjust the speed of the swing
-    const swingAmplitude = Math.PI / 6; // Adjust the angle range (e.g., 30 degrees)
+    useEffect(() => {
+        const ropeBody = rigidBodyRef.current;
+        return () => {
+            const state = useParkourStore.getState();
+            if (state.ropeAttachment?.ropeBody === ropeBody) state.releaseRope();
+        };
+    }, []);
 
-    const [ref, api] = useCylinder(() => ({
-        mass: 0,
-        type: 'Dynamic',
-        args: args,
-        position: position,
-    }))
-
-    useFrame(({ clock }) => {
-        if (groupRef.current) {
-            const time = clock.getElapsedTime();
-            // Update rotation on the X-axis to create a back-and-forth motion
-            groupRef.current.rotation.z = Math.sin(time * swingSpeed) * swingAmplitude;
+    const handlePlayerContact = ({ other }) => {
+        const state = useParkourStore.getState();
+        const ropeBody = rigidBodyRef.current;
+        if (ropeBody && other.rigidBody === state.rigidBody) {
+            state.requestRopeGrab(ropeBody, args[2], args[0]);
         }
+    };
+
+    useBeforePhysicsStep((world) => {
+        const body = rigidBodyRef.current;
+        if (!body) return;
+
+        // Preserve the parent's world rotation, including the second rope's 90-degree turn.
+        if (!initialRotation.current) {
+            initialRotation.current = new Quaternion().copy(body.rotation());
+        }
+        elapsedTime.current += world.timestep;
+        const angle =
+            Math.sin(elapsedTime.current * SWING_SPEED) * SWING_AMPLITUDE;
+        swingRotation.setFromAxisAngle(swingAxis, angle);
+        nextRotation.copy(initialRotation.current).multiply(swingRotation);
+        body.setNextKinematicRotation(nextRotation);
     });
 
     return (
         <group rotation={rotation}>
-
-            <mesh ref={ref} castShadow>
-                <boxGeometry args={[1, 1, 1]} />
-                <meshStandardMaterial color="gray" />
-            </mesh>
-
-            <group ref={groupRef} position={position}>
-                <mesh position={[0, -args[2] / 2, 0]} castShadow>
+            <RigidBody
+                type="fixed"
+                position={position}
+                colliders={false}
+            >
+                <CuboidCollider
+                    args={[0.5, 0.5, 0.5]}
+                    friction={0.3}
+                />
+                <mesh castShadow>
+                    <boxGeometry args={[1, 1, 1]} />
+                    <meshStandardMaterial color="gray" />
+                </mesh>
+            </RigidBody>
+            <RigidBody
+                ref={rigidBodyRef}
+                type="kinematicPosition"
+                position={position}
+                colliders={false}
+            >
+                <CylinderCollider
+                    args={[args[2] / 2, args[0]]}
+                    position={[0, -args[2] / 2, 0]}
+                    friction={0.3}
+                    sensor
+                    onIntersectionEnter={handlePlayerContact}
+                />
+                <mesh
+                    position={[0, -args[2] / 2, 0]}
+                    castShadow
+                >
                     <cylinderGeometry args={args} />
                     <meshStandardMaterial color="yellow" />
                 </mesh>
-            </group>
-
+            </RigidBody>
         </group>
-    )
-
+    );
 }
