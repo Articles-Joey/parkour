@@ -1,10 +1,9 @@
-import { PointerLockControls } from "@react-three/drei"
-import { useThree } from "@react-three/fiber"
+import { PointerLockControls } from "@react-three/drei";
+import { useThree } from "@react-three/fiber";
 import { memo } from "react";
 
 function FPV({ location, setLocation, menuOpen }) {
-
-    const { camera, gl } = useThree()
+    const { camera, gl } = useThree();
 
     const handleUpdate = () => {
         // Get the updated camera position
@@ -22,8 +21,7 @@ function FPV({ location, setLocation, menuOpen }) {
             onUpdate={handleUpdate}
             selector="#game-canvas"
         />
-    )
-
+    );
 }
 
-export default memo(FPV)
+export default memo(FPV);

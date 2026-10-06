@@ -5,6 +5,7 @@ import {
     useRevoluteJoint,
 } from "@react-three/rapier";
 import { useRef } from "react";
+import RopeMesh from "./RopeMesh";
 
 export default function SwingingBall({ args, position, i }) {
     const anchorRef = useRef(null);
@@ -39,7 +40,7 @@ export default function SwingingBall({ args, position, i }) {
                 canSleep={false}
                 ccd
             >
-                {/* Collider dimensions use half-height and radius, unlike cylinderGeometry. */}
+                {/* The cylinder collider uses half-height; RopeMesh uses full length. */}
                 <CylinderCollider
                     args={[args[2] / 2, args[0]]}
                     position={[0, -3.6, 0]}
@@ -52,13 +53,11 @@ export default function SwingingBall({ args, position, i }) {
                     mass={10}
                     friction={0.3}
                 />
-                <mesh
+                <RopeMesh
+                    length={args[2]}
+                    radius={args[0]}
                     position={[0, -args[2] / 2, 0]}
-                    castShadow
-                >
-                    <cylinderGeometry args={args} />
-                    <meshStandardMaterial color="black" />
-                </mesh>
+                />
                 <mesh
                     position={[0, -6.5, 0]}
                     castShadow

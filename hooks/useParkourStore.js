@@ -1,6 +1,11 @@
 "use client";
 // import { create } from 'zustand'
 import { createWithEqualityFn as create } from "zustand/traditional";
+import { useStore } from "./useStore";
+import {
+    SPRINT_RECHARGE_DELAY,
+    stepSprint,
+} from "@/components/Game/sprintSettings";
 // import { nanoid } from 'nanoid'
 
 const getLocalStorage = (key) => JSON.parse(window.localStorage.getItem(key));
@@ -55,18 +60,28 @@ export const useParkourStore = create((set, get) => ({
         }));
     },
 
-    debug: false,
-    setDebug: (newValue) => {
-        set((prev) => ({
-            debug: newValue,
-        }));
-    },
-
     isThirdPerson: false,
     setThirdPerson: (isThirdPerson) => set({ isThirdPerson }),
-    toggleThirdPerson: () => set((state) => ({ isThirdPerson: !state.isThirdPerson })),
+    toggleThirdPerson: () =>
+        set((state) => ({ isThirdPerson: !state.isThirdPerson })),
     cameraDistance: 6,
     setCameraDistance: (cameraDistance) => set({ cameraDistance }),
+
+    sprintEnergy: 1,
+    sprintIdleSeconds: SPRINT_RECHARGE_DELAY,
+    isSprinting: false,
+    updateSprint: (requestingSprint, delta) => {
+        const state = get();
+        const next = stepSprint(state, requestingSprint, delta);
+        if (
+            next.sprintEnergy !== state.sprintEnergy ||
+            next.sprintIdleSeconds !== state.sprintIdleSeconds ||
+            next.isSprinting !== state.isSprinting
+        ) {
+            set(next);
+        }
+        return next.isSprinting;
+    },
 
     music: false,
     setMusic: (newValue) => {
@@ -82,14 +97,36 @@ export const useParkourStore = create((set, get) => ({
     position: [0, 0, 0], // Initial sphere position
     setPlayer: (rigidBody) => {
         if (!rigidBody) get().releaseRope();
-        set({ rigidBody });
+        set({
+            rigidBody,
+            isSprinting: false,
+            ...(rigidBody
+                ? { sprintEnergy: 1, sprintIdleSeconds: SPRINT_RECHARGE_DELAY }
+                : {}),
+        });
     },
     requestRopeGrab: (ropeBody, length, radius) => {
         const { rigidBody, ropeAttachment, ropeGrabBlockedUntil } = get();
-        if (!rigidBody || ropeAttachment || Date.now() < ropeGrabBlockedUntil) return;
+        const { debug, flyMode } = useStore.getState();
+        if (
+            !rigidBody ||
+            ropeAttachment ||
+            (debug && flyMode) ||
+            Date.now() < ropeGrabBlockedUntil
+        )
+            return;
 
         // The player creates the joint before the next step, outside collision callbacks.
-        set({ ropeAttachment: { ropeBody, length, radius, joint: null, world: null, anchor: null } });
+        set({
+            ropeAttachment: {
+                ropeBody,
+                length,
+                radius,
+                joint: null,
+                world: null,
+                anchor: null,
+            },
+        });
     },
     releaseRope: () => {
         const { ropeAttachment } = get();
@@ -112,7 +149,10 @@ export const useParkourStore = create((set, get) => ({
         );
         rigidBody.setLinvel({ x: 0, y: 0, z: 0 }, true);
         rigidBody.setAngvel({ x: 0, y: 0, z: 0 }, true);
-        set((state) => ({ position: [...location], teleportVersion: state.teleportVersion + 1 }));
+        set((state) => ({
+            position: [...location],
+            teleportVersion: state.teleportVersion + 1,
+        }));
     },
 
     checkpoints: initialCheckpoints,

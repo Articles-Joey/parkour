@@ -7,6 +7,7 @@ import {
 import { useEffect, useMemo, useRef } from "react";
 import { Quaternion, Vector3 } from "three";
 import { useParkourStore } from "@/hooks/useParkourStore";
+import RopeMesh from "./RopeMesh";
 
 const SWING_SPEED = 2;
 const SWING_AMPLITUDE = Math.PI / 6;
@@ -23,7 +24,8 @@ export default function RopeSwing({ args, position, rotation }) {
         const ropeBody = rigidBodyRef.current;
         return () => {
             const state = useParkourStore.getState();
-            if (state.ropeAttachment?.ropeBody === ropeBody) state.releaseRope();
+            if (state.ropeAttachment?.ropeBody === ropeBody)
+                state.releaseRope();
         };
     }, []);
 
@@ -80,13 +82,11 @@ export default function RopeSwing({ args, position, rotation }) {
                     sensor
                     onIntersectionEnter={handlePlayerContact}
                 />
-                <mesh
+                <RopeMesh
+                    length={args[2]}
+                    radius={args[0]}
                     position={[0, -args[2] / 2, 0]}
-                    castShadow
-                >
-                    <cylinderGeometry args={args} />
-                    <meshStandardMaterial color="yellow" />
-                </mesh>
+                />
             </RigidBody>
         </group>
     );

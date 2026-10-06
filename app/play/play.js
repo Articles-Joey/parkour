@@ -9,8 +9,11 @@ import { useStore } from "@/hooks/useStore";
 import LeftPanelContent from "@/components/UI/LeftPanel";
 import CameraZoomIndicator from "@/components/UI/CameraZoomIndicator";
 import RopeSwingIndicator from "@/components/UI/RopeSwingIndicator";
+import SprintMeter from "@/components/UI/SprintMeter";
 
-const GameCanvas = dynamic(() => import("@/components/Game/GameCanvas"), { ssr: false });
+const GameCanvas = dynamic(() => import("@/components/Game/GameCanvas"), {
+    ssr: false,
+});
 
 export default function ParkourGamePage() {
     const sceneKey = useStore((state) => state.sceneKey);
@@ -20,22 +23,31 @@ export default function ParkourGamePage() {
 
     return (
         <Box
-            className={classNames(`${process.env.NEXT_PUBLIC_GAME_KEY}-game-page`, {
-                "menu-open": showMenu,
-                fullscreen: isFullscreen,
-                "show-sidebar": sidebar,
-            })}
+            className={classNames(
+                `${process.env.NEXT_PUBLIC_GAME_KEY}-game-page`,
+                {
+                    "menu-open": showMenu,
+                    fullscreen: isFullscreen,
+                    "show-sidebar": sidebar,
+                },
+            )}
             id={`${process.env.NEXT_PUBLIC_GAME_KEY}-game-page`}
             sx={{
                 position: "relative",
                 display: "flex",
-                "& canvas.fill": { bgcolor: "rgb(255 255 255 / 35%)", position: "initial !important" },
+                "& canvas.fill": {
+                    bgcolor: "rgb(255 255 255 / 35%)",
+                    position: "initial !important",
+                },
             }}
         >
             <GameMenu
                 useStore={useStore}
                 LeftPanelContent={LeftPanelContent}
-                menuBarConfig={{ style: "Corner Button", menuBarButtonPosition: "Left" }}
+                menuBarConfig={{
+                    style: "Corner Button",
+                    menuBarButtonPosition: "Left",
+                }}
                 sidebarConfig={{ style: "Static Panel" }}
             />
             <Box
@@ -81,13 +93,17 @@ export default function ParkourGamePage() {
                         inset: 0,
                         height: "100%",
                         width: "100%",
-                        "& canvas": { height: "100% !important", width: "100% !important" },
+                        "& canvas": {
+                            height: "100% !important",
+                            width: "100% !important",
+                        },
                     }}
                 >
                     <GameCanvas key={sceneKey} />
                     <CameraZoomIndicator />
                     <RopeSwingIndicator />
                 </Box>
+                <SprintMeter />
             </Box>
         </Box>
     );

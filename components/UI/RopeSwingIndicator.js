@@ -12,7 +12,7 @@ export default function RopeSwingIndicator() {
             role="status"
             sx={{
                 position: "absolute",
-                bottom: 24,
+                bottom: 76,
                 left: "50%",
                 transform: "translateX(-50%)",
                 zIndex: 2,

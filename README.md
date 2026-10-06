@@ -18,4 +18,4 @@ Aiming to have multiplayer via P2P and Websockets. Websocket backend code is not
 
 ## Attributions
 
-[Parkour Icon](https://www.flaticon.com/free-icon/parkour_3163705)  
+[Parkour Icon](https://www.flaticon.com/free-icon/parkour_3163705)

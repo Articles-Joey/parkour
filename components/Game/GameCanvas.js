@@ -1,6 +1,6 @@
 import { CuboidCollider, Physics, RigidBody } from "@react-three/rapier";
 import { Canvas } from "@react-three/fiber";
-import { memo, Suspense, useEffect, useMemo, useState } from "react";
+import { memo, Suspense } from "react";
 import { Player } from "./Player";
 import { Sky } from "@react-three/drei";
 import { useParkourStore } from "@/hooks/useParkourStore";
@@ -10,10 +10,17 @@ import { degToRad } from "three/src/math/MathUtils";
 import SwingingBall from "./SwingingBall";
 import RopeSwing from "./RopeSwing";
 import { useStore } from "@/hooks/useStore";
+import Platform from "./Platform";
+import SpinningPlatform from "./SpinningPlatform";
+import DisappearingPlatform from "./DisappearingPlatform";
+import GravityPlatform from "./GravityPlatform";
+
+// Change this seed to generate a new, repeatable set of platform colors.
+const PLATFORM_COLOR_SEED = 1;
 
 function GameCanvas() {
     const controlType = useParkourStore((state) => state.controlType);
-    const debug = useParkourStore((state) => state.debug);
+    const debug = useStore((state) => state.debug);
 
     const darkMode = useStore((state) => state.darkMode);
 
@@ -22,9 +29,18 @@ function GameCanvas() {
             <Player />
 
             {[...Array(10)].map((item, i) => {
+                const obstacleKey = `start-platform-${i}`;
+                const Obstacle =
+                    i === 4
+                        ? DisappearingPlatform
+                        : i === 7
+                          ? GravityPlatform
+                          : Platform;
                 return (
-                    <Ground
-                        key={i}
+                    <Obstacle
+                        key={obstacleKey}
+                        obstacleKey={obstacleKey}
+                        colorSeed={PLATFORM_COLOR_SEED}
                         args={[2.5, 0.5, 2.5]}
                         position={[0, 0, 0 + i * -4]}
                     />
@@ -32,9 +48,12 @@ function GameCanvas() {
             })}
 
             {[...Array(10)].map((item, i) => {
+                const obstacleKey = `climb-platform-${i}`;
                 return (
-                    <Ground
-                        key={i}
+                    <Platform
+                        key={obstacleKey}
+                        obstacleKey={obstacleKey}
+                        colorSeed={PLATFORM_COLOR_SEED}
                         args={[2.5, 0.5, 2.5]}
                         position={[0, i * 0.5, -40 + i * -4]}
                     />
@@ -42,6 +61,7 @@ function GameCanvas() {
             })}
 
             <Checkpoint
+                key="checkpoint-1"
                 name={"1"}
                 args={[2.5, 2.5, 2.5]}
                 position={[0, 6, -76]}
@@ -53,9 +73,12 @@ function GameCanvas() {
             />
 
             {[...Array(10)].map((item, i) => {
+                const obstacleKey = `turn-platform-${i}`;
                 return (
-                    <Ground
-                        key={i}
+                    <Platform
+                        key={obstacleKey}
+                        obstacleKey={obstacleKey}
+                        colorSeed={PLATFORM_COLOR_SEED}
                         args={[2.5, 0.5, 2.5]}
                         position={[-5 + i * -6, 5 + i * 0.5, -76]}
                     />
@@ -63,6 +86,7 @@ function GameCanvas() {
             })}
 
             <Checkpoint
+                key="checkpoint-2"
                 name={"2"}
                 args={[2.5, 2.5, 2.5]}
                 position={[-59, 11, -76]}
@@ -73,24 +97,13 @@ function GameCanvas() {
                 scale={2}
             />
 
-            {/* {[...Array(10)].map((item, i) => {
-    return (
-        <Ground
-            key={i}
-            args={[.5, 0.5, 2.5]}
-            position={[
-                -59,
-                9.5,
-                -76 - (i * -6)
-            ]}
-        />
-    )
-})} */}
-
             {[...Array(10)].map((item, i) => {
+                const obstacleKey = `spinning-platform-${i}`;
                 return (
-                    <Wheel
-                        key={i}
+                    <SpinningPlatform
+                        key={obstacleKey}
+                        obstacleKey={obstacleKey}
+                        colorSeed={PLATFORM_COLOR_SEED}
                         args={[2.5, 0.5, 0.5]}
                         position={[-59, 9.5, -73 - i * -6]}
                     />
@@ -98,12 +111,16 @@ function GameCanvas() {
             })}
 
             <group>
-                <Ground
+                <Platform
+                    key="checkpoint-3-platform"
+                    obstacleKey="checkpoint-3-platform"
+                    colorSeed={PLATFORM_COLOR_SEED}
                     args={[2.5, 0.5, 2.5]}
                     position={[-59, 9.5, -15]}
                 />
 
                 <Checkpoint
+                    key="checkpoint-3"
                     name={"3"}
                     args={[2.5, 2.5, 2.5]}
                     position={[-59, 11, -15]}
@@ -116,7 +133,10 @@ function GameCanvas() {
             </group>
 
             {/* Walkway */}
-            <Ground
+            <Platform
+                key="walkway-platform"
+                obstacleKey="walkway-platform"
+                colorSeed={PLATFORM_COLOR_SEED}
                 args={[50, 0.5, 0.5]}
                 position={[-59 + 25, 9.5, -15]}
             />
@@ -124,7 +144,7 @@ function GameCanvas() {
             {[...Array(7)].map((item, i) => {
                 return (
                     <SwingingBall
-                        key={i}
+                        key={`swinging-ball-${i}`}
                         args={[0.1, 0.1, 7, 8]}
                         position={[-14 + i * -6, 18, -15]}
                         i={i}
@@ -133,12 +153,16 @@ function GameCanvas() {
             })}
 
             <group>
-                <Ground
+                <Platform
+                    key="checkpoint-4-platform"
+                    obstacleKey="checkpoint-4-platform"
+                    colorSeed={PLATFORM_COLOR_SEED}
                     args={[2.5, 0.5, 2.5]}
                     position={[-9, 9.5, -15]}
                 />
 
                 <Checkpoint
+                    key="checkpoint-4"
                     name={"4"}
                     args={[2.5, 2.5, 2.5]}
                     position={[-9, 11, -15]}
@@ -151,28 +175,37 @@ function GameCanvas() {
             </group>
 
             <RopeSwing
+                key="rope-swing-1"
                 position={[0, 18, -15]}
                 args={[0.1, 0.1, 9, 8]}
             />
 
-            <Ground
+            <Platform
+                key="rope-landing-platform"
+                obstacleKey="rope-landing-platform"
+                colorSeed={PLATFORM_COLOR_SEED}
                 args={[2.5, 0.5, 2.5]}
                 position={[10, 9.5, -15]}
             />
 
             <RopeSwing
+                key="rope-swing-2"
                 rotation={[0, degToRad(90), 0]}
                 args={[0.1, 0.1, 9, 8]}
                 position={[7.5, 18, 12.5]}
             />
 
             <group position={[10, 9.5, 0]}>
-                <Ground
+                <Platform
+                    key="return-platform"
+                    obstacleKey="return-platform"
+                    colorSeed={PLATFORM_COLOR_SEED}
                     args={[2.5, 0.5, 2.5]}
                     position={[0, 0, 0]}
                 />
 
                 <Checkpoint
+                    key="return-checkpoint"
                     name={"4"}
                     args={[2.5, 2.5, 2.5]}
                     position={[0, 1.5, 0]}
@@ -185,10 +218,32 @@ function GameCanvas() {
             </group>
 
             {/* Plank back to start */}
-            <Ground
+            <Platform
+                key="return-plank-platform"
+                obstacleKey="return-plank-platform"
+                colorSeed={PLATFORM_COLOR_SEED}
                 args={[10, 0.5, 0.5]}
                 position={[5, 10, 0]}
             />
+
+            <GravityPlatform
+                key="gravity-platform-near-start"
+                obstacleKey="gravity-platform-near-start"
+                colorSeed={PLATFORM_COLOR_SEED}
+                position={[-2.51, 9.78, -0.03]}
+            />
+
+            {[...Array(7)].map((item, i) => {
+                return (
+                    <DisappearingPlatform
+                        key={`disappearing-platform-${i}`}
+                        obstacleKey={`disappearing-platform-${i}`}
+                        args={[1, 0.1, 1]}
+                        position={[-5.55 + i * -2, 9.96, -0.0]}
+                        i={i}
+                    />
+                );
+            })}
         </>
     );
 
@@ -197,7 +252,7 @@ function GameCanvas() {
         // camera={{ position: [-10, 40, 40], fov: 50 }}
         >
             <Sky sunPosition={[100, darkMode ? -10 : 10, 20]} />
-            <ambientLight intensity={1} />
+            <ambientLight intensity={2} />
 
             {controlType == "Mouse and Keyboard" && (
                 <FPV
@@ -222,76 +277,6 @@ function GameCanvas() {
 }
 
 export default memo(GameCanvas);
-
-function Ground({ args, position, disappearing }) {
-    const [activated, setActivated] = useState(false);
-    const [hasDisappeared, setHasDisappeared] = useState(false);
-
-    useEffect(() => {
-        if (!activated) return;
-        const timeout = setTimeout(
-            () => {
-                if (hasDisappeared) {
-                    setActivated(false);
-                    setHasDisappeared(false);
-                } else {
-                    setHasDisappeared(true);
-                }
-            },
-            hasDisappeared ? 5000 : 1000,
-        );
-        return () => clearTimeout(timeout);
-    }, [activated, hasDisappeared]);
-
-    return (
-        <RigidBody
-            type="fixed"
-            position={position}
-            colliders={false}
-            onCollisionEnter={() => {
-                if (disappearing) setActivated(true);
-            }}
-        >
-            {!hasDisappeared && (
-                <CuboidCollider
-                    args={args.map((size) => size / 2)}
-                    friction={0.3}
-                />
-            )}
-            <mesh
-                castShadow
-                visible={!hasDisappeared}
-            >
-                <boxGeometry args={args} />
-                <meshStandardMaterial color="gray" />
-            </mesh>
-        </RigidBody>
-    );
-}
-
-function Wheel({ args, position }) {
-    const [angularSpeed] = useState(() => 0.9 + Math.random() * 0.2);
-    const angularVelocity = useMemo(() => [0, angularSpeed, 0], [angularSpeed]);
-
-    return (
-        <RigidBody
-            type="kinematicVelocity"
-            position={position}
-            colliders={false}
-            angularVelocity={angularVelocity}
-            userData={{ parkourSpinningPlatform: true }}
-        >
-            <CuboidCollider
-                args={args.map((size) => size / 2)}
-                friction={0.3}
-            />
-            <mesh castShadow>
-                <boxGeometry args={args} />
-                <meshStandardMaterial color="gray" />
-            </mesh>
-        </RigidBody>
-    );
-}
 
 function Checkpoint({ args, position, name }) {
     const unlockCheckpoint = ({ other }) => {

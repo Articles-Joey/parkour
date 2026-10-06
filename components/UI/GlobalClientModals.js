@@ -19,11 +19,20 @@ export default function GlobalClientModals() {
                 tabs: {
                     Graphics: { darkMode: true, landingAnimation: true },
                     Audio: {
-                        sliders: Object.keys(useAudioStore.getState().audioSettings)
+                        sliders: Object.keys(
+                            useAudioStore.getState().audioSettings,
+                        )
                             .filter((key) => key !== "enabled")
                             .map((key) => ({
                                 key,
-                                label: key.split("_").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" "),
+                                label: key
+                                    .split("_")
+                                    .map(
+                                        (word) =>
+                                            word.charAt(0).toUpperCase() +
+                                            word.slice(1),
+                                    )
+                                    .join(" "),
                             })),
                     },
                     Controls: { touchControls: true },
