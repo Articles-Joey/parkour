@@ -8,9 +8,7 @@ import IconButton from "@mui/material/IconButton";
 import Snackbar from "@mui/material/Snackbar";
 import Tooltip from "@mui/material/Tooltip";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import RefreshIcon from "@mui/icons-material/Refresh";
 import ArticlesSwitch from "./ArticlesSwitch";
-import ArticlesButton from "./Button";
 import { useParkourStore } from "@/hooks/useParkourStore";
 import { useStore } from "@/hooks/useStore";
 
@@ -22,9 +20,6 @@ export default function DebugPanel() {
     const flyMode = useStore((state) => state.flyMode);
     const setFlyMode = useStore((state) => state.setFlyMode);
     const position = useParkourStore((state) => state.position);
-    const checkpoints = useParkourStore((state) => state.checkpoints);
-    const resetCheckpoints = useParkourStore((state) => state.resetCheckpoints);
-    const teleportPlayer = useParkourStore((state) => state.teleportPlayer);
     const coordinates = `[${position.map((value) => value.toFixed(2)).join(", ")}]`;
 
     const copyCoordinates = async () => {
@@ -54,13 +49,6 @@ export default function DebugPanel() {
                 >
                     Debug
                 </Box>
-                <IconButton
-                    size="small"
-                    aria-label="Reset checkpoints"
-                    onClick={resetCheckpoints}
-                >
-                    <RefreshIcon fontSize="small" />
-                </IconButton>
             </Box>
             <Box sx={sectionSx}>
                 <FormControlLabel
@@ -87,26 +75,6 @@ export default function DebugPanel() {
                         Controller: left stick to fly, A to rise, B to descend.
                     </Box>
                 )}
-            </Box>
-            <Box
-                sx={{
-                    ...sectionSx,
-                    display: "flex",
-                    flexWrap: "wrap",
-                    justifyContent: "center",
-                }}
-            >
-                {checkpoints
-                    .filter((checkpoint) => checkpoint.location.length === 3)
-                    .map((checkpoint) => (
-                        <ArticlesButton
-                            key={checkpoint.name}
-                            small
-                            onClick={() => teleportPlayer(checkpoint.location)}
-                        >
-                            {checkpoint.name}
-                        </ArticlesButton>
-                    ))}
             </Box>
             <Box
                 sx={{
@@ -141,19 +109,6 @@ export default function DebugPanel() {
                 onClose={() => setCopyMessage(null)}
                 message={copyMessage}
             />
-            <Box sx={{ p: "0.5rem" }}>
-                {checkpoints.map((checkpoint) => (
-                    <Box
-                        key={checkpoint.name}
-                        sx={{ mb: "0.5rem" }}
-                    >
-                        <Box sx={{ fontSize: "0.875em" }}>
-                            {checkpoint.name}
-                        </Box>
-                        <Box>{checkpoint.locked ? "Locked" : "Unlocked"}</Box>
-                    </Box>
-                ))}
-            </Box>
         </Card>
     );
 }

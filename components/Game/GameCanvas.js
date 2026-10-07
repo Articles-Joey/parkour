@@ -209,7 +209,7 @@ function GameCanvas() {
 
                 <Checkpoint
                     key="return-checkpoint"
-                    name={"4"}
+                    name={"5"}
                     args={[2.5, 2.5, 2.5]}
                     position={[0, 1.5, 0]}
                 />

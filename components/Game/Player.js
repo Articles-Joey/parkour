@@ -561,7 +561,7 @@ function PlayerBase() {
         >
             {/* Rapier's capsule matches Tag's two spheres and center cylinder. */}
             <CapsuleCollider
-                args={[0.15, 0.3]}
+                args={[0.33, 0.13]}
                 mass={PLAYER_MASS}
                 collisionGroups={PLAYER_COLLISION_GROUPS}
                 friction={0}
