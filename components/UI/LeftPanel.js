@@ -15,6 +15,7 @@ import { useStore } from "@/hooks/useStore";
 import GameMenuPrimaryButtonGroup from "@articles-media/articles-dev-box/GameMenuPrimaryButtonGroup";
 import DebugPanel from "./DebugPanel";
 import CheckpointsPanel from "./CheckpointsPanel";
+import MapEditorPanel from "./MapEditorPanel";
 
 const cardSx = { border: 1, borderColor: "divider", fontSize: "0.875rem" };
 
@@ -135,6 +136,7 @@ export default function LeftPanelContent() {
                     </Box>
                 </CardContent>
             </Card>
+            <MapEditorPanel />
             <CheckpointsPanel />
             {debug && <DebugPanel />}
         </Box>

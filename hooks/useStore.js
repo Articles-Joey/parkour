@@ -6,11 +6,48 @@ import typicalZustandStoreExcludes from "@articles-media/articles-dev-box/typica
 import typicalZustandStoreStateSlice from "@articles-media/articles-dev-box/typicalZustandStoreStateSlice";
 
 import generateRandomNickname from "@/util/generateRandomNickname";
+import { levelMaps as defaultLevelMaps } from "@/data/levelMaps";
+import { normalizeLevelMap } from "@/data/mapUtils";
 
 export const useStore = create()(
     persist(
         (set, get) => ({
             ...typicalZustandStoreStateSlice(set, get, generateRandomNickname),
+
+            // Built-in map edits and progress survive reloads; Custom layouts live in URLs.
+            levelMaps: [],
+            checkpointProgress: {},
+            saveLevelMap: (level) => {
+                if (
+                    !defaultLevelMaps.some(
+                        (map) => map.mapName === level.mapName,
+                    )
+                )
+                    throw new Error("Only built-in maps can be saved here.");
+                const saved = normalizeLevelMap(level);
+                set((state) => ({
+                    levelMaps: [
+                        ...state.levelMaps.filter(
+                            (map) => map.mapName !== saved.mapName,
+                        ),
+                        saved,
+                    ],
+                }));
+            },
+            setMapCheckpointProgress: (mapKey, ids) => {
+                if (!mapKey) return;
+                set((state) => ({
+                    checkpointProgress: {
+                        ...state.checkpointProgress,
+                        [mapKey]: [...new Set(ids)],
+                    },
+                }));
+            },
+            completeMapCheckpoint: (mapKey, id) => {
+                const completed = get().checkpointProgress[mapKey] ?? [];
+                if (!mapKey || completed.includes(id)) return;
+                get().setMapCheckpointProgress(mapKey, [...completed, id]);
+            },
 
             // Debug already comes from the shared slice. Both flags are persisted.
             flyMode: false,
@@ -76,6 +113,15 @@ export const useStore = create()(
                 const state = { ...currentState, ...persistedState };
                 return {
                     ...state,
+                    levelMaps: Array.isArray(state.levelMaps)
+                        ? state.levelMaps
+                        : [],
+                    checkpointProgress:
+                        state.checkpointProgress &&
+                        typeof state.checkpointProgress === "object" &&
+                        !Array.isArray(state.checkpointProgress)
+                            ? state.checkpointProgress
+                            : {},
                     flyMode: Boolean(state.debug && state.flyMode),
                 };
             },

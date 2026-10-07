@@ -6,46 +6,30 @@ import {
     SPRINT_RECHARGE_DELAY,
     stepSprint,
 } from "@/components/Game/sprintSettings";
-
-const initialCheckpoints = [
-    {
-        name: "Start",
-        locked: false,
-        location: [0, 5, 0],
-    },
-    {
-        name: "1",
-        locked: true,
-        location: [0, 5, -76],
-    },
-    {
-        name: "2",
-        locked: true,
-        location: [-59, 11, -76],
-    },
-    {
-        name: "3",
-        locked: true,
-        location: [-59, 11, -15],
-    },
-    {
-        name: "4",
-        locked: true,
-        location: [-9, 11, -15],
-    },
-    {
-        name: "5",
-        locked: true,
-        location: [10, 11, 0],
-    },
-    {
-        name: "End",
-        locked: true,
-        location: [],
-    },
-];
+import { getMapCheckpoints, getMapProgressKey } from "@/data/mapUtils";
 
 export const useParkourStore = create((set, get) => ({
+    mapName: null,
+    activeMapKey: null,
+    spawnPosition: [0, 5, 0],
+    spawnRotation: [0, 0, 0],
+    editMode: false,
+    activateLevel: (level) => {
+        get().releaseRope();
+        const activeMapKey = getMapProgressKey(level);
+        const completed =
+            useStore.getState().checkpointProgress[activeMapKey] ?? [];
+        const checkpoints = getMapCheckpoints(level, completed);
+        set({
+            mapName: level.mapName,
+            activeMapKey,
+            checkpoints,
+            spawnPosition: checkpoints[0].location,
+            spawnRotation: level.mapObstacles.find(
+                (item) => item.component === "Player",
+            )?.props.rotation ?? [0, 0, 0],
+        });
+    },
     // Mouse and Keyboard
     // Touch
     controlType: "Mouse and Keyboard",
@@ -134,7 +118,7 @@ export const useParkourStore = create((set, get) => ({
     setPosition: (position) => set({ position }),
     teleportPlayer: (location) => {
         const { rigidBody } = get();
-        if (!rigidBody || !location || location.length !== 3) return;
+        if (!rigidBody?.isValid() || !location || location.length !== 3) return;
 
         get().releaseRope();
 
@@ -150,15 +134,34 @@ export const useParkourStore = create((set, get) => ({
         }));
     },
 
-    checkpoints: initialCheckpoints,
-    setCheckpoints: (newValue) => {
-        set((prev) => ({
-            checkpoints: newValue,
-        }));
+    checkpoints: [],
+    unlockCheckpoint: (id) => {
+        const { activeMapKey, checkpoints, editMode } = get();
+        const checkpoint = checkpoints.find((item) => item.id === id);
+        if (editMode || !checkpoint?.locked) return;
+        useStore.getState().completeMapCheckpoint(activeMapKey, id);
+        set({
+            checkpoints: checkpoints.map((item) =>
+                item.id === id ? { ...item, locked: false } : item,
+            ),
+        });
     },
-    resetCheckpoints: (newValue) => {
-        set((prev) => ({
-            checkpoints: initialCheckpoints,
-        }));
+    setCheckpoints: (newValue) => {
+        useStore.getState().setMapCheckpointProgress(
+            get().activeMapKey,
+            newValue
+                .filter((item) => item.id !== "__start__" && !item.locked)
+                .map((item) => item.id),
+        );
+        set({ checkpoints: newValue });
+    },
+    resetCheckpoints: () => {
+        useStore.getState().setMapCheckpointProgress(get().activeMapKey, []);
+        set({
+            checkpoints: get().checkpoints.map((item) => ({
+                ...item,
+                locked: item.id !== "__start__",
+            })),
+        });
     },
 }));

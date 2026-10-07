@@ -3,10 +3,11 @@ import { useFrame } from "@react-three/fiber";
 import { useRef } from "react";
 import { useParkourStore } from "@/hooks/useParkourStore";
 
-export default function Checkpoint({ args, position, name }) {
+export default function Checkpoint({ args, position, rotation, checkpointId }) {
     const unlocked = useParkourStore((state) =>
         state.checkpoints.some(
-            (checkpoint) => checkpoint.name === name && checkpoint.locked === false,
+            (checkpoint) =>
+                checkpoint.id === checkpointId && checkpoint.locked === false,
         ),
     );
     const colliderRef = useRef(null);
@@ -30,24 +31,16 @@ export default function Checkpoint({ args, position, name }) {
     });
 
     const unlockCheckpoint = ({ other }) => {
-        const { rigidBody, checkpoints, setCheckpoints } =
-            useParkourStore.getState();
+        const { rigidBody, unlockCheckpoint } = useParkourStore.getState();
         if (other.rigidBody !== rigidBody) return;
-
-        // Read the latest state so simultaneous intersections cannot relock a checkpoint.
-        setCheckpoints(
-            checkpoints.map((checkpoint) =>
-                checkpoint.name === name
-                    ? { ...checkpoint, locked: false }
-                    : checkpoint,
-            ),
-        );
+        unlockCheckpoint(checkpointId);
     };
 
     return (
         <RigidBody
             type="fixed"
             position={position}
+            rotation={rotation}
             colliders={false}
         >
             <CuboidCollider

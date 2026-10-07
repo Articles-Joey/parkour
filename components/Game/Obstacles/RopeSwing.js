@@ -8,11 +8,13 @@ import { useEffect, useMemo, useRef } from "react";
 import { Quaternion, Vector3 } from "three";
 import { useParkourStore } from "@/hooks/useParkourStore";
 import RopeMesh from "./RopeMesh";
+import RopeSwingGuides from "./RopeSwingGuides";
 
 const SWING_SPEED = 2;
 const SWING_AMPLITUDE = Math.PI / 6;
 
 export default function RopeSwing({ args, position, rotation }) {
+    const editMode = useParkourStore((state) => state.editMode);
     const rigidBodyRef = useRef(null);
     const initialRotation = useRef(null);
     const elapsedTime = useRef(0);
@@ -88,6 +90,13 @@ export default function RopeSwing({ args, position, rotation }) {
                     position={[0, -args[2] / 2, 0]}
                 />
             </RigidBody>
+            {editMode && (
+                <RopeSwingGuides
+                    length={args[2]}
+                    amplitude={SWING_AMPLITUDE}
+                    position={position}
+                />
+            )}
         </group>
     );
 }

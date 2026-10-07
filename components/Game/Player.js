@@ -33,7 +33,7 @@ const ROPE_CLIMB_SPEED = 2.5;
 const ROPE_TOP_MARGIN = 1;
 const ROPE_BOTTOM_MARGIN = 0.45;
 
-function PlayerBase() {
+function PlayerBase({ position = [0, 5, 0] }) {
     const {
         moveBackward,
         moveForward,
@@ -94,7 +94,15 @@ function PlayerBase() {
 
     useEffect(() => {
         setPlayer(rigidBodyRef.current);
-        camera.rotation.set(0, 0, 0, "YXZ");
+        const state = useParkourStore.getState();
+        const latestCheckpoint = [...state.checkpoints]
+            .reverse()
+            .find(
+                (checkpoint) =>
+                    !checkpoint.locked && checkpoint.location.length === 3,
+            );
+        state.teleportPlayer(latestCheckpoint?.location ?? state.spawnPosition);
+        camera.rotation.set(...state.spawnRotation, "YXZ");
         return () => setPlayer(null);
     }, [camera, setPlayer]);
 
@@ -474,7 +482,7 @@ function PlayerBase() {
         const position = body.translation();
         const { debug, flyMode } = useStore.getState();
         if (position.y < -10 && !(debug && flyMode)) {
-            let latestCheckpoint = [0, 5, 0];
+            let latestCheckpoint = useParkourStore.getState().spawnPosition;
             for (const checkpoint of useParkourStore.getState().checkpoints) {
                 if (!checkpoint.locked && checkpoint.location.length === 3) {
                     latestCheckpoint = checkpoint.location;
@@ -553,7 +561,7 @@ function PlayerBase() {
         <RigidBody
             ref={rigidBodyRef}
             type="dynamic"
-            position={[0, 5, 0]}
+            position={position}
             colliders={false}
             canSleep={false}
             lockRotations

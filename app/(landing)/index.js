@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import dynamic from "next/dynamic";
@@ -17,6 +17,8 @@ import useUserToken from "@articles-media/articles-dev-box/useUserToken";
 import NicknameInput from "@articles-media/articles-dev-box/NicknameInput";
 import GameMenuPrimaryButtonGroup from "@articles-media/articles-dev-box/GameMenuPrimaryButtonGroup";
 import SessionButton from "@articles-media/articles-dev-box/SessionButton";
+import { levelMaps, getLevelMap } from "@/data/levelMaps";
+import { getCheckpointCount } from "@/data/mapUtils";
 
 const ReturnToLauncherButton = dynamic(
     () => import("@articles-media/articles-dev-box/ReturnToLauncherButton"),
@@ -30,16 +32,17 @@ const Ad = dynamic(() => import("@articles-media/articles-dev-box/Ad"), {
     ssr: false,
 });
 
-const maps = [
-    { name: "Beginner", description: "Learn the basics", ready: true },
-    { name: "Intermediate", description: "Heating up", ready: false },
-    { name: "Advanced", description: "You shall not pass", ready: false },
-    { name: "Expert", description: "You shall not pass", ready: false },
-];
-
 export default function CannonGameLobbyPage() {
+    const [mounted, setMounted] = useState(false);
+    const savedMaps = useStore((state) => state.levelMaps);
+    const checkpointProgress = useStore((state) => state.checkpointProgress);
+    const maps = levelMaps.map((map) =>
+        getLevelMap(map.mapName, mounted ? savedMaps : []),
+    );
     const socket = useSocketStore((state) => state.socket);
     const darkMode = useStore((state) => state.darkMode);
+
+    useEffect(() => setMounted(true), []);
 
     useEffect(() => {
         const room = `game:${process.env.NEXT_PUBLIC_GAME_KEY}-landing`;
@@ -143,6 +146,7 @@ export default function CannonGameLobbyPage() {
                             sx={{
                                 p: "0.5rem",
                                 "&:last-child": { pb: "0.5rem" },
+                                mb: 1,
                             }}
                         >
                             <Typography
@@ -159,42 +163,60 @@ export default function CannonGameLobbyPage() {
                                     mb: "1rem",
                                 }}
                             >
-                                {maps.map((map) => (
-                                    <Box
-                                        key={map.name}
-                                        sx={{
-                                            p: "0.5rem",
-                                            border: "1px solid rgba(0,0,0,0.25)",
-                                            display: "flex",
-                                            flexDirection: "column",
-                                            alignItems: "center",
-                                        }}
-                                    >
+                                {maps.map((map) => {
+                                    const progress = getCheckpointCount(
+                                        map,
+                                        mounted
+                                            ? (checkpointProgress[
+                                                  map.mapName
+                                              ] ?? [])
+                                            : [],
+                                    );
+                                    return (
                                         <Box
+                                            key={map.mapName}
                                             sx={{
+                                                p: "0.5rem",
+                                                border: "1px solid rgba(0,0,0,0.25)",
                                                 display: "flex",
-                                                justifyContent: "space-between",
+                                                flexDirection: "column",
                                                 alignItems: "center",
-                                                width: "100%",
-                                                mb: "0.5rem",
                                             }}
                                         >
-                                            {map.name}
+                                            <Box
+                                                sx={{
+                                                    display: "flex",
+                                                    justifyContent:
+                                                        "space-between",
+                                                    alignItems: "center",
+                                                    width: "100%",
+                                                    mb: "0.5rem",
+                                                }}
+                                            >
+                                                {map.mapName}
+                                                <Box
+                                                    component="span"
+                                                    sx={{ fontSize: "0.8rem" }}
+                                                    aria-label={`${progress.completed} of ${progress.total} checkpoints completed`}
+                                                >
+                                                    {progress.completed}/
+                                                    {progress.total}
+                                                </Box>
+                                            </Box>
+                                            <ArticlesButton
+                                                component={Link}
+                                                href={{
+                                                    pathname: "/play",
+                                                    query: { map: map.mapName },
+                                                }}
+                                                sx={{ px: "3rem" }}
+                                                small
+                                            >
+                                                Play
+                                            </ArticlesButton>
                                         </Box>
-                                        <ArticlesButton
-                                            component={Link}
-                                            href={{
-                                                pathname: "/play",
-                                                query: { map: map.name },
-                                            }}
-                                            sx={{ px: "3rem" }}
-                                            small
-                                            disabled={!map.ready}
-                                        >
-                                            Play
-                                        </ArticlesButton>
-                                    </Box>
-                                ))}
+                                    );
+                                })}
                             </Box>
                             <Typography
                                 sx={{ fontSize: "0.875em", fontWeight: 700 }}
@@ -202,9 +224,24 @@ export default function CannonGameLobbyPage() {
                                 Submitted Maps
                             </Typography>
                             <Typography sx={{ fontSize: "0.875em" }}>
-                                Coming soon...
+                                Build a map and share its link. Feature to
+                                submit maps is coming soon! In the meantime, you
+                                can build a map and share its link with friends.
+                                Works best on Google Chrome.
                             </Typography>
+                            <ArticlesButton
+                                component={Link}
+                                href="/play?map=Custom&edit=1"
+                                small
+                                sx={{
+                                    mt: 1,
+                                    width: "100%",
+                                }}
+                            >
+                                Build Map
+                            </ArticlesButton>
                         </CardContent>
+
                         <Box
                             sx={{
                                 p: "0.5rem",
@@ -222,10 +259,12 @@ export default function CannonGameLobbyPage() {
                             />
                         </Box>
                     </Card>
+
                     <SessionButton
                         port={process.env.NEXT_PUBLIC_GAME_PORT}
                         friendsButton
                     />
+
                     <ReturnToLauncherButton />
                 </Box>
                 <GameScoreboard

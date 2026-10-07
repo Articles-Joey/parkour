@@ -21,11 +21,12 @@ export default function CheckpointsPanel() {
     const checkpoints = useParkourStore((state) => state.checkpoints);
     const resetCheckpoints = useParkourStore((state) => state.resetCheckpoints);
     const debug = useStore((state) => state.debug);
+    const editMode = useParkourStore((state) => state.editMode);
 
-    const teleportToCheckpoint = (name) => {
+    const teleportToCheckpoint = (id) => {
         // Recheck the current unlock state in case progress was just reset.
         const { checkpoints, teleportPlayer } = useParkourStore.getState();
-        const checkpoint = checkpoints.find((item) => item.name === name);
+        const checkpoint = checkpoints.find((item) => item.id === id);
         if (checkpoint?.locked !== false || checkpoint.location.length !== 3)
             return;
         teleportPlayer(checkpoint.location);
@@ -41,7 +42,10 @@ export default function CheckpointsPanel() {
                     alignItems: "center",
                 }}
             >
-                <Box component="h2" sx={{ m: 0, fontSize: "inherit" }}>
+                <Box
+                    component="h2"
+                    sx={{ m: 0, fontSize: "inherit" }}
+                >
                     Checkpoints
                 </Box>
                 <Box sx={{ display: "flex", alignItems: "center" }}>
@@ -57,11 +61,19 @@ export default function CheckpointsPanel() {
                         </Tooltip>
                     )}
                     <Tooltip
-                        title={expanded ? "Collapse checkpoints" : "Expand checkpoints"}
+                        title={
+                            expanded
+                                ? "Collapse checkpoints"
+                                : "Expand checkpoints"
+                        }
                     >
                         <IconButton
                             size="small"
-                            aria-label={expanded ? "Collapse checkpoints" : "Expand checkpoints"}
+                            aria-label={
+                                expanded
+                                    ? "Collapse checkpoints"
+                                    : "Expand checkpoints"
+                            }
                             aria-expanded={expanded}
                             aria-controls={checkpointListId}
                             onClick={() => setExpanded((value) => !value)}
@@ -87,23 +99,31 @@ export default function CheckpointsPanel() {
                     .filter((checkpoint) => checkpoint.location.length === 3)
                     .map((checkpoint) => (
                         <ArticlesButton
-                            key={checkpoint.name}
+                            key={checkpoint.id}
                             small
-                            disabled={checkpoint.locked !== false}
-                            onClick={() => teleportToCheckpoint(checkpoint.name)}
+                            disabled={editMode || checkpoint.locked !== false}
+                            onClick={() => teleportToCheckpoint(checkpoint.id)}
                         >
                             {checkpoint.name}
                         </ArticlesButton>
                     ))}
             </Box>
-            <Collapse in={expanded} id={checkpointListId}>
+            <Collapse
+                in={expanded}
+                id={checkpointListId}
+            >
                 <Box sx={{ p: "0.5rem" }}>
                     {checkpoints.map((checkpoint) => (
-                        <Box key={checkpoint.name} sx={{ mb: "0.5rem" }}>
+                        <Box
+                            key={checkpoint.id}
+                            sx={{ mb: "0.5rem" }}
+                        >
                             <Box sx={{ fontSize: "0.875em" }}>
                                 {checkpoint.name}
                             </Box>
-                            <Box>{checkpoint.locked ? "Locked" : "Unlocked"}</Box>
+                            <Box>
+                                {checkpoint.locked ? "Locked" : "Unlocked"}
+                            </Box>
                         </Box>
                     ))}
                 </Box>

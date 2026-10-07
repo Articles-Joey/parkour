@@ -1,7 +1,7 @@
 {
     "name": "parkour",
     "description": "Parkour web game build with React Three Fiber and react-three/rapier.",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "private": false,
     "homepage": "https://parkour.articles.media",
     "scripts": {
