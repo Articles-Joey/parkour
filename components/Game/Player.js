@@ -19,6 +19,8 @@ import { getGroundSupport } from "./groundSupport";
 const JUMP_FORCE = 4;
 const SPEED = 4;
 const FLY_SPEED = 8;
+const PLAYER_MASS = 1;
+const PLAYER_COLLISION_GROUPS = 0xffffffff;
 const CONTROLLER_DEADZONE = 0.15;
 const LOOK_SENSITIVITY = 0.04;
 const THIRD_PERSON_MIN_DISTANCE = 2;
@@ -58,7 +60,7 @@ function PlayerBase() {
         useParkourStore.getState().teleportVersion,
     );
     const ropeJumpActive = useRef(false);
-    const previousFlyMode = useRef(false);
+    const appliedFlightState = useRef({ body: null, flying: null });
     const direction = useMemo(() => new Vector3(), []);
     const ropeJumpMomentum = useMemo(() => new Vector3(), []);
     const downhillVelocity = useMemo(() => new Vector3(), []);
@@ -129,27 +131,52 @@ function PlayerBase() {
     useBeforePhysicsStep((world) => {
         const body = rigidBodyRef.current;
         if (!body) return;
+        const collider = body.collider(0);
+        if (!collider) return;
         elapsedTime.current += world.timestep;
 
         const store = useParkourStore.getState();
         const { debug, flyMode } = useStore.getState();
         const flying = debug && flyMode;
-        if (flying !== previousFlyMode.current) {
-            previousFlyMode.current = flying;
+        const gravityScale = flying ? 0 : 1;
+        const collisionGroups = flying ? 0 : PLAYER_COLLISION_GROUPS;
+        const modeChanged =
+            appliedFlightState.current.body !== body ||
+            appliedFlightState.current.flying !== flying;
+        const physicsOutOfSync =
+            body.bodyType() !== rapier.RigidBodyType.Dynamic ||
+            body.gravityScale() !== gravityScale ||
+            !body.isEnabled() ||
+            !collider.isEnabled() ||
+            collider.collisionGroups() !== collisionGroups ||
+            body.mass() <= 0;
+
+        if (modeChanged || physicsOutOfSync) {
             if (flying) store.releaseRope();
-            body.setBodyType(
-                flying
-                    ? rapier.RigidBodyType.KinematicVelocityBased
-                    : rapier.RigidBodyType.Dynamic,
-                true,
-            );
-            body.collider(0).setEnabled(!flying);
-            body.setLinvel({ x: 0, y: 0, z: 0 }, true);
-            groundedSteps.current = 0;
-            isJumping.current = false;
-            ropeJumpActive.current = false;
-            ropeJumpMomentum.set(0, 0, 0);
-            downhillVelocity.set(0, 0, 0);
+
+            // Keep the collider enabled so its mass is initialized even when
+            // persisted fly mode is active before the first physics step.
+            // Filtering collisions permits flight through the map without
+            // changing the player into a kinematic or massless body.
+            body.setEnabled(true);
+            collider.setEnabled(true);
+            collider.setCollisionGroups(collisionGroups);
+            collider.setMass(PLAYER_MASS);
+            body.setBodyType(rapier.RigidBodyType.Dynamic, true);
+            body.setEnabledTranslations(true, true, true, true);
+            body.recomputeMassPropertiesFromColliders();
+            body.setGravityScale(gravityScale, true);
+            body.wakeUp();
+
+            if (modeChanged) {
+                body.setLinvel({ x: 0, y: 0, z: 0 }, true);
+                groundedSteps.current = 0;
+                isJumping.current = false;
+                ropeJumpActive.current = false;
+                ropeJumpMomentum.set(0, 0, 0);
+                downhillVelocity.set(0, 0, 0);
+            }
+            appliedFlightState.current = { body, flying };
         }
         if (store.teleportVersion !== lastTeleportVersion.current) {
             lastTeleportVersion.current = store.teleportVersion;
@@ -330,7 +357,13 @@ function PlayerBase() {
         }
 
         const velocity = body.linvel();
-        const groundCollider = getGroundSupport(world, body.collider(0));
+        surfaceNormal.set(0, 1, 0);
+        const groundCollider = getGroundSupport(
+            world,
+            body.collider(0),
+            undefined,
+            surfaceNormal,
+        );
         let supportCollider = groundCollider;
         if (!supportCollider) {
             const steepSupport = getGroundSupport(world, body.collider(0), 0.1);
@@ -352,13 +385,22 @@ function PlayerBase() {
         }
         const platform = supportCollider?.parent();
         const onGravityPlatform = !!platform?.userData?.parkourGravityPlatform;
+        const onRotatingLog = !!platform?.userData?.parkourRotatingLog;
+        if (!groundCollider && platform) {
+            surfaceNormal.set(0, 1, 0).applyQuaternion(platform.rotation());
+        }
+        surfaceOffset
+            .copy(body.translation())
+            .addScaledVector(surfaceNormal, -0.45);
         // Carry the player with rotating surfaces.
         const platformVelocity =
-            platform?.userData?.parkourSpinningPlatform || onGravityPlatform
-                ? platform.velocityAtPoint(body.translation())
+            platform?.userData?.parkourSpinningPlatform ||
+            onGravityPlatform ||
+            onRotatingLog
+                ? platform.velocityAtPoint(
+                      onRotatingLog ? surfaceOffset : body.translation(),
+                  )
                 : null;
-        surfaceNormal.set(0, 1, 0);
-        if (platform) surfaceNormal.applyQuaternion(platform.rotation());
         const normalVelocity =
             (velocity.x - (platformVelocity?.x || 0)) * surfaceNormal.x +
             (velocity.y - (platformVelocity?.y || 0)) * surfaceNormal.y +
@@ -510,6 +552,7 @@ function PlayerBase() {
     return (
         <RigidBody
             ref={rigidBodyRef}
+            type="dynamic"
             position={[0, 5, 0]}
             colliders={false}
             canSleep={false}
@@ -519,7 +562,8 @@ function PlayerBase() {
             {/* Rapier's capsule matches Tag's two spheres and center cylinder. */}
             <CapsuleCollider
                 args={[0.15, 0.3]}
-                mass={1}
+                mass={PLAYER_MASS}
+                collisionGroups={PLAYER_COLLISION_GROUPS}
                 friction={0}
                 frictionCombineRule={rapier.CoefficientCombineRule.Min}
             />

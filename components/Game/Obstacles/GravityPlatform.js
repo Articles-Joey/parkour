@@ -7,7 +7,7 @@ import { useMemo, useRef } from "react";
 import { DoubleSide, Quaternion, Vector3 } from "three";
 import { useParkourStore } from "@/hooks/useParkourStore";
 import { useStore } from "@/hooks/useStore";
-import { getGroundSupport } from "./groundSupport";
+import { getGroundSupport } from "../groundSupport";
 import { getPlatformColor } from "./platformColor";
 
 const TILT_SPEED = 0.7; // Radians per second at the edge.

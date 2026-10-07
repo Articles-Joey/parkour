@@ -1,4 +1,4 @@
-import { CuboidCollider, Physics, RigidBody } from "@react-three/rapier";
+import { Physics } from "@react-three/rapier";
 import { Canvas } from "@react-three/fiber";
 import { memo, Suspense } from "react";
 import { Player } from "./Player";
@@ -7,13 +7,16 @@ import { useParkourStore } from "@/hooks/useParkourStore";
 import FPV from "./FPV";
 import { ModelKennyNLMiniGolfFlagRed } from "@/components/Models/flag-red";
 import { degToRad } from "three/src/math/MathUtils";
-import SwingingBall from "./SwingingBall";
-import RopeSwing from "./RopeSwing";
+import SwingingBall from "./Obstacles/SwingingBall";
+import RopeSwing from "./Obstacles/RopeSwing";
 import { useStore } from "@/hooks/useStore";
-import Platform from "./Platform";
-import SpinningPlatform from "./SpinningPlatform";
-import DisappearingPlatform from "./DisappearingPlatform";
-import GravityPlatform from "./GravityPlatform";
+import Platform from "./Obstacles/Platform";
+import SpinningPlatform from "./Obstacles/SpinningPlatform";
+import DisappearingPlatform from "./Obstacles/DisappearingPlatform";
+import GravityPlatform from "./Obstacles/GravityPlatform";
+import RotatingLog from "./Obstacles/RotatingLog";
+import SpringPlatform from "./Obstacles/SpringPlatform";
+import Checkpoint from "./Obstacles/Checkpoint";
 
 // Change this seed to generate a new, repeatable set of platform colors.
 const PLATFORM_COLOR_SEED = 1;
@@ -137,7 +140,7 @@ function GameCanvas() {
                 key="walkway-platform"
                 obstacleKey="walkway-platform"
                 colorSeed={PLATFORM_COLOR_SEED}
-                args={[50, 0.5, 0.5]}
+                args={[47, 0.25, 0.25]}
                 position={[-59 + 25, 9.5, -15]}
             />
 
@@ -192,7 +195,7 @@ function GameCanvas() {
                 key="rope-swing-2"
                 rotation={[0, degToRad(90), 0]}
                 args={[0.1, 0.1, 9, 8]}
-                position={[7.5, 18, 12.5]}
+                position={[7.5, 18, 10]}
             />
 
             <group position={[10, 9.5, 0]}>
@@ -222,8 +225,8 @@ function GameCanvas() {
                 key="return-plank-platform"
                 obstacleKey="return-plank-platform"
                 colorSeed={PLATFORM_COLOR_SEED}
-                args={[10, 0.5, 0.5]}
-                position={[5, 10, 0]}
+                args={[8, 0.5, 0.5]}
+                position={[3.5, 9.5, 0]}
             />
 
             <GravityPlatform
@@ -244,6 +247,60 @@ function GameCanvas() {
                     />
                 );
             })}
+            <RotatingLog
+                key="rotating-log-1"
+                obstacleKey="rotating-log-1"
+                colorSeed={PLATFORM_COLOR_SEED}
+                position={[-24.55, 9.26, 0]}
+                radius={0.75}
+                length={10}
+                pegCount={12}
+                seed={7}
+                rotationSpeed={0.6}
+            />
+            <RotatingLog
+                key="rotating-log-2"
+                obstacleKey="rotating-log-2"
+                colorSeed={PLATFORM_COLOR_SEED}
+                position={[-36.55, 9.26, 0]}
+                radius={0.75}
+                length={10}
+                pegCount={12}
+                seed={7}
+                rotationSpeed={1.2}
+            />
+            <RotatingLog
+                key="rotating-log-2"
+                obstacleKey="rotating-log-2"
+                colorSeed={PLATFORM_COLOR_SEED}
+                position={[-48.55, 9.26, 0]}
+                radius={0.75}
+                length={10}
+                pegCount={12}
+                seed={7}
+                rotationSpeed={2}
+            />
+            <SpringPlatform
+                key="spring-platform-1"
+                obstacleKey="spring-platform-1"
+                colorSeed={PLATFORM_COLOR_SEED}
+                position={[-56, 10, 0]}
+                force={15}
+            />
+            <SpringPlatform
+                key="spring-platform-1"
+                obstacleKey="spring-platform-1"
+                colorSeed={PLATFORM_COLOR_SEED}
+                position={[-59, 20, 0]}
+                force={15}
+            />
+            <SpringPlatform
+                key="spring-platform-1"
+                obstacleKey="spring-platform-1"
+                colorSeed={PLATFORM_COLOR_SEED}
+                position={[-62, 30, 0]}
+                force={15}
+            />
         </>
     );
 
@@ -277,42 +334,3 @@ function GameCanvas() {
 }
 
 export default memo(GameCanvas);
-
-function Checkpoint({ args, position, name }) {
-    const unlockCheckpoint = ({ other }) => {
-        const { rigidBody, checkpoints, setCheckpoints } =
-            useParkourStore.getState();
-        if (other.rigidBody !== rigidBody) return;
-
-        // Read the latest state so simultaneous intersections cannot relock a checkpoint.
-        setCheckpoints(
-            checkpoints.map((checkpoint) =>
-                checkpoint.name === name
-                    ? { ...checkpoint, locked: false }
-                    : checkpoint,
-            ),
-        );
-    };
-
-    return (
-        <RigidBody
-            type="fixed"
-            position={position}
-            colliders={false}
-        >
-            <CuboidCollider
-                args={args.map((size) => size / 2)}
-                sensor
-                onIntersectionEnter={unlockCheckpoint}
-            />
-            <mesh castShadow>
-                <boxGeometry args={args} />
-                <meshStandardMaterial
-                    transparent={true}
-                    opacity={0.5}
-                    color="red"
-                />
-            </mesh>
-        </RigidBody>
-    );
-}

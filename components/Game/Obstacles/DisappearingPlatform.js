@@ -6,7 +6,7 @@ import {
 import { useRef } from "react";
 import { useParkourStore } from "@/hooks/useParkourStore";
 import { useStore } from "@/hooks/useStore";
-import { getGroundSupport } from "./groundSupport";
+import { getGroundSupport } from "../groundSupport";
 import { getPlatformColor } from "./platformColor";
 
 // These durations are in seconds, measured using the physics timestep.

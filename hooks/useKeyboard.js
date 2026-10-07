@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useStore } from "./useStore";
 
 function actionByKey(key) {
     const keyActionMap = {
@@ -41,8 +42,29 @@ export const useKeyboard = () => {
     });
 
     const handleKeyDown = useCallback((e) => {
+        if (e.code === "KeyG") {
+            if (
+                e.repeat ||
+                e.isComposing ||
+                e.defaultPrevented ||
+                e.ctrlKey ||
+                e.altKey ||
+                e.metaKey ||
+                e.target?.closest?.(
+                    'input, textarea, select, [contenteditable]:not([contenteditable="false"]), [role="textbox"]',
+                )
+            )
+                return;
+
+            const { debug, toggleFlyMode } = useStore.getState();
+            if (debug) {
+                e.preventDefault();
+                toggleFlyMode();
+            }
+            return;
+        }
+
         const action = actionByKey(e.code);
-        console.log("test");
         if (action) {
             setActions((prev) => {
                 return {
@@ -55,7 +77,6 @@ export const useKeyboard = () => {
 
     const handleKeyUp = useCallback((e) => {
         const action = actionByKey(e.code);
-        console.log("test");
         if (action) {
             setActions((prev) => {
                 return {

@@ -17,6 +17,7 @@ export const useStore = create()(
             setFlyMode: (enabled) => {
                 set({ flyMode: Boolean(enabled) && get().debug });
             },
+            toggleFlyMode: () => get().setFlyMode(!get().flyMode),
             setDebug: (enabled) => {
                 const debug = Boolean(enabled);
                 set((state) => ({ debug, flyMode: debug && state.flyMode }));

@@ -70,7 +70,7 @@ export default function DebugPanel() {
                             setChecked={setFlyMode}
                         />
                     }
-                    label="Fly mode"
+                    label="Fly mode (G)"
                     sx={{ m: 0 }}
                 />
                 {flyMode && (

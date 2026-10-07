@@ -41,7 +41,7 @@ const initialCheckpoints = [
     {
         name: "5",
         locked: true,
-        location: [8, 11, 0],
+        location: [10, 11, 0],
     },
     {
         name: "End",
