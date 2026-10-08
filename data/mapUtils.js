@@ -1,5 +1,9 @@
 import { createMapComponent, normalizeMapObstacles } from "./mapComponents";
 import { createCustomMap } from "./levelMaps";
+import {
+    DEFAULT_LEVEL_COLOR_SEED,
+    normalizeLevelColorSeed,
+} from "./mapSettings";
 
 // Chromium's url::kMaxURLChars applies to the entire encoded URL, not decoded JSON.
 // https://chromium.googlesource.com/chromium/src/+/main/url/url_constants.h
@@ -13,14 +17,34 @@ export function assertCustomMapUrlFits(url) {
 }
 
 export function normalizeLevelMap(level) {
+    // Older local saves/links kept this value in obstacle props. Move it to the level.
+    const legacySeed = level.mapObstacles?.find(
+        (item) => item?.props?.colorSeed != null,
+    )?.props.colorSeed;
     return {
         ...level,
+        colorSeed: normalizeLevelColorSeed(
+            level.colorSeed ?? legacySeed ?? DEFAULT_LEVEL_COLOR_SEED,
+        ),
         mapObstacles: normalizeMapObstacles(level.mapObstacles),
     };
 }
 
-export function readCustomMap(components) {
-    if (!components) return createCustomMap();
+export function readCustomMap(components, colorSeedParam = null) {
+    let colorSeed;
+    if (colorSeedParam !== null) {
+        try {
+            colorSeed = JSON.parse(colorSeedParam);
+        } catch {
+            colorSeed = colorSeedParam;
+        }
+        colorSeed = normalizeLevelColorSeed(colorSeed);
+    }
+    if (!components)
+        return normalizeLevelMap({
+            ...createCustomMap(),
+            ...(colorSeedParam !== null ? { colorSeed } : {}),
+        });
     // Decoded data cannot be longer than its encoded URL. Full URLs are checked separately.
     if (components.length > MAX_CUSTOM_MAP_URL_LENGTH)
         throw new Error("The custom map URL is too large.");
@@ -30,7 +54,11 @@ export function readCustomMap(components) {
     } catch {
         throw new Error("The custom map URL contains invalid component JSON.");
     }
-    return { mapName: "Custom", mapObstacles: normalizeMapObstacles(parsed) };
+    return normalizeLevelMap({
+        mapName: "Custom",
+        mapObstacles: parsed,
+        ...(colorSeedParam !== null ? { colorSeed } : {}),
+    });
 }
 
 export function getMapProgressKey(level) {
@@ -77,13 +105,22 @@ export function getCheckpointCount(level, completed = []) {
     };
 }
 
-export function getMapRouteKey(map, components, edit) {
-    return JSON.stringify([map ?? "Beginner", components ?? "", edit ?? ""]);
+export function getMapRouteKey(map, components, edit, colorSeed = null) {
+    return JSON.stringify([
+        map ?? "Beginner",
+        components ?? "",
+        edit ?? "",
+        colorSeed,
+    ]);
 }
 
 export function customMapUrl(level, baseUrl, editing = false) {
     const url = new URL("/play", baseUrl);
     url.searchParams.set("map", "Custom");
+    url.searchParams.set(
+        "colorSeed",
+        JSON.stringify(normalizeLevelColorSeed(level.colorSeed)),
+    );
     // Keep the URL an array of named components, omitting props the loader defaults.
     const components = level.mapObstacles.map((item) => {
         const defaults = createMapComponent(item.component, item.id).props;

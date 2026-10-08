@@ -1,5 +1,15 @@
+import { createContext, useContext } from "react";
+import { DEFAULT_LEVEL_COLOR_SEED } from "@/data/mapSettings";
+
+export const LevelColorSeedContext = createContext(DEFAULT_LEVEL_COLOR_SEED);
+
+export function usePlatformColor(obstacleKey, platformColor) {
+    const seed = useContext(LevelColorSeedContext);
+    return platformColor?.trim() || getPlatformColor(obstacleKey, seed);
+}
+
 // React's key is not passed as a prop; use the same value as obstacleKey.
-export function getPlatformColor(obstacleKey, seed = 1) {
+export function getPlatformColor(obstacleKey, seed = DEFAULT_LEVEL_COLOR_SEED) {
     const input = JSON.stringify([seed, obstacleKey]);
     let hash = 2166136261;
 

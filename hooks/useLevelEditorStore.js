@@ -3,10 +3,7 @@
 import { createWithEqualityFn as create } from "zustand/traditional";
 import { useStore } from "./useStore";
 import { useParkourStore } from "./useParkourStore";
-import {
-    createMapComponent,
-    normalizeMapObstacles,
-} from "@/data/mapComponents";
+import { createMapComponent } from "@/data/mapComponents";
 import { getLevelMap, levelMaps } from "@/data/levelMaps";
 import {
     assertCustomMapUrlFits,
@@ -27,11 +24,22 @@ export const useLevelEditorStore = create((set, get) => ({
     transformMode: "translate",
     focusVersion: 0,
     dirty: false,
+    isSavingCode: false,
     loadError: null,
     message: null,
 
-    initializeRoute: (mapParam, components, editParam) => {
-        const sourceKey = getMapRouteKey(mapParam, components, editParam);
+    initializeRoute: (
+        mapParam,
+        components,
+        editParam,
+        colorSeedParam = null,
+    ) => {
+        const sourceKey = getMapRouteKey(
+            mapParam,
+            components,
+            editParam,
+            colorSeedParam,
+        );
         if (sourceKey === get().sourceKey) return;
         const mapName = mapParam ?? "Beginner";
         const isCustom = mapName === "Custom";
@@ -39,7 +47,7 @@ export const useLevelEditorStore = create((set, get) => ({
             const currentUrl = isCustom ? new URL(window.location.href) : null;
             if (currentUrl) assertCustomMapUrlFits(currentUrl);
             const source = isCustom
-                ? readCustomMap(components)
+                ? readCustomMap(components, colorSeedParam)
                 : getLevelMap(mapName, useStore.getState().levelMaps);
             if (!source) throw new Error(`Map "${mapName}" does not exist.`);
             const level = normalizeLevelMap(source);
@@ -130,13 +138,13 @@ export const useLevelEditorStore = create((set, get) => ({
     setTransformMode: (transformMode) => set({ transformMode }),
     focusSelection: () => set({ focusVersion: get().focusVersion + 1 }),
 
-    updateDraft: (mapObstacles) => {
+    updateLevel: (changes) => {
         if (!get().editMode) return;
         try {
-            const level = {
+            const level = normalizeLevelMap({
                 ...get().level,
-                mapObstacles: normalizeMapObstacles(mapObstacles),
-            };
+                ...changes,
+            });
             // Reject oversized changes before replacing the last working map or URL.
             if (get().isCustom)
                 assertCustomMapUrlFits(
@@ -148,6 +156,8 @@ export const useLevelEditorStore = create((set, get) => ({
             set({ message: error.message });
         }
     },
+    updateDraft: (mapObstacles) => get().updateLevel({ mapObstacles }),
+    setLevelColorSeed: (colorSeed) => get().updateLevel({ colorSeed }),
     updateObstacleProps: (id, props) => {
         if (!get().level) return;
         get().updateDraft(
@@ -175,6 +185,7 @@ export const useLevelEditorStore = create((set, get) => ({
         position[2] -= 4;
         if (component === "RopeSwing" || component === "SwingingBall")
             position[1] += 8;
+        if (component === "Text") position[1] += 2;
         const props = { position };
         if (component === "Checkpoint") {
             const names = new Set(
@@ -228,6 +239,7 @@ export const useLevelEditorStore = create((set, get) => ({
                         "Custom",
                         url.searchParams.get("components"),
                         url.searchParams.get("edit"),
+                        url.searchParams.get("colorSeed"),
                     ),
                     customUrlLength: url.href.length,
                 });
@@ -241,6 +253,79 @@ export const useLevelEditorStore = create((set, get) => ({
                 message: get().isCustom
                     ? "Map URL updated."
                     : "Map saved on this device.",
+            });
+        } catch (error) {
+            set({ message: error.message });
+        }
+    },
+    saveMapToCode: async () => {
+        const { level: draft, isCustom, isSavingCode, sessionVersion } = get();
+        if (!draft || isCustom || isSavingCode) return;
+        if (process.env.NODE_ENV !== "development") {
+            set({ message: "Save to code is available in development only." });
+            return;
+        }
+        set({ isSavingCode: true, message: "Saving map to code..." });
+        try {
+            const level = normalizeLevelMap(draft);
+            const response = await fetch("/api/level-maps", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    mapName: level.mapName,
+                    colorSeed: level.colorSeed,
+                    mapObstacles: level.mapObstacles,
+                }),
+            });
+            const result = await response.json().catch(() => null);
+            if (!response.ok)
+                throw new Error(
+                    result?.error ?? "Could not save the map to code.",
+                );
+            // A previously saved local copy must not override the new source data.
+            useStore.getState().removeSavedLevelMap(level.mapName);
+            if (
+                get().level?.mapName === level.mapName &&
+                get().sessionVersion === sessionVersion
+            ) {
+                const hasNewEdits =
+                    JSON.stringify(get().level.mapObstacles) !==
+                        JSON.stringify(level.mapObstacles) ||
+                    get().level.colorSeed !== level.colorSeed;
+                set({
+                    dirty: hasNewEdits ? get().dirty : false,
+                    message: `${level.mapName} saved to levelMaps.js.${hasNewEdits ? " Newer edits are still unsaved." : ""}`,
+                });
+            }
+        } catch (error) {
+            if (
+                get().level?.mapName === draft.mapName &&
+                get().sessionVersion === sessionVersion
+            )
+                set({ message: error.message });
+        } finally {
+            set({ isSavingCode: false });
+        }
+    },
+    resetSavedLevels: () => {
+        const { level, isCustom, sessionVersion } = get();
+        if (!level || isCustom || get().isSavingCode) return;
+        try {
+            const freshLevel = normalizeLevelMap(getLevelMap(level.mapName));
+            useStore.getState().resetLevelMaps();
+            useParkourStore.getState().activateLevel(freshLevel);
+            const resume = [...useParkourStore.getState().checkpoints]
+                .reverse()
+                .find((item) => !item.locked);
+            useParkourStore.setState({ position: [...resume.location] });
+            set({
+                level: freshLevel,
+                dirty: false,
+                selectedObstacleId: null,
+                loadError: null,
+                // Rebuild physics bodies and refocus the editor on the restored map.
+                sessionVersion: sessionVersion + 1,
+                message: `All saved level edits reset. ${freshLevel.mapName} reloaded from source data.`,
             });
         } catch (error) {
             set({ message: error.message });

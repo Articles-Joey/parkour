@@ -8,6 +8,7 @@ import { useLevelEditorStore } from "@/hooks/useLevelEditorStore";
 import FPV from "./FPV";
 import MapObstacle from "./MapObstacle";
 import MapEditorControls from "./MapEditorControls";
+import { LevelColorSeedContext } from "./Obstacles/platformColor";
 
 function GameCanvas() {
     const controlType = useParkourStore((state) => state.controlType);
@@ -32,24 +33,26 @@ function GameCanvas() {
             ) : (
                 controlType === "Mouse and Keyboard" && <FPV />
             )}
-            <Suspense fallback={null}>
-                <Physics
-                    key={`${sessionVersion}-${editMode}`}
-                    paused={editMode}
-                    debug={debug && !editMode}
-                    gravity={[0, -9.81, 0]}
-                    timeStep={1 / 60}
-                    updatePriority={-1}
-                >
-                    {level.mapObstacles.map((obstacle) => (
-                        <MapObstacle
-                            key={obstacle.id}
-                            obstacle={obstacle}
-                            editing={editMode}
-                        />
-                    ))}
-                </Physics>
-            </Suspense>
+            <LevelColorSeedContext.Provider value={level.colorSeed}>
+                <Suspense fallback={null}>
+                    <Physics
+                        key={`${sessionVersion}-${editMode}`}
+                        paused={editMode}
+                        debug={debug && !editMode}
+                        gravity={[0, -9.81, 0]}
+                        timeStep={1 / 60}
+                        updatePriority={-1}
+                    >
+                        {level.mapObstacles.map((obstacle) => (
+                            <MapObstacle
+                                key={obstacle.id}
+                                obstacle={obstacle}
+                                editing={editMode}
+                            />
+                        ))}
+                    </Physics>
+                </Suspense>
+            </LevelColorSeedContext.Provider>
         </Canvas>
     );
 }

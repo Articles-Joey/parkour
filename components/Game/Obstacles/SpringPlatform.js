@@ -7,7 +7,7 @@ import { useRef } from "react";
 import { useParkourStore } from "@/hooks/useParkourStore";
 import { useStore } from "@/hooks/useStore";
 import { getGroundSupport } from "../groundSupport";
-import { getPlatformColor } from "./platformColor";
+import { usePlatformColor } from "./platformColor";
 
 const DEFAULT_ARGS = [2.5, 0.5, 2.5];
 
@@ -16,10 +16,11 @@ export default function SpringPlatform({
     position,
     rotation,
     obstacleKey,
-    colorSeed = 1,
+    platformColor,
     // Vertical launch speed in meters per second, matching Player's jump force.
     force = 15,
 }) {
+    const color = usePlatformColor(obstacleKey, platformColor);
     const colliderRef = useRef(null);
     const launched = useRef(false);
     const padRadius = Math.min(args[0], args[2]) * 0.32;
@@ -74,9 +75,7 @@ export default function SpringPlatform({
                 receiveShadow
             >
                 <boxGeometry args={args} />
-                <meshStandardMaterial
-                    color={getPlatformColor(obstacleKey, colorSeed)}
-                />
+                <meshStandardMaterial color={color} />
             </mesh>
             <mesh
                 position={[0, args[1] / 2 + 0.015, 0]}

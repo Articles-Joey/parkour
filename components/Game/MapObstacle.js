@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import { TransformControls } from "@react-three/drei";
 import { Player } from "./Player";
+import Text from "./Text";
 import Platform from "./Obstacles/Platform";
 import SpinningPlatform from "./Obstacles/SpinningPlatform";
 import DisappearingPlatform from "./Obstacles/DisappearingPlatform";
@@ -15,6 +16,7 @@ import { useLevelEditorStore } from "@/hooks/useLevelEditorStore";
 
 const components = {
     Player,
+    Text,
     Platform,
     SpinningPlatform,
     DisappearingPlatform,

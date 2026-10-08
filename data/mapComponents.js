@@ -1,10 +1,21 @@
 // Serializable props shared by the level loader, editor and custom-map URLs.
 export const MAX_MAP_COMPONENTS = 500;
 
-const boxProps = { args: [2.5, 0.5, 2.5], colorSeed: 1 };
+const boxProps = { args: [2.5, 0.5, 2.5], platformColor: "" };
 
 export const MAP_COMPONENTS = {
     Player: { label: "Player spawn", props: {} },
+    Text: {
+        label: "Text",
+        props: {
+            text: "Your text",
+            fontSize: 1,
+            color: "#ffffff",
+            stroke: 0.03,
+            strokeColor: "#000000",
+            billboard: false,
+        },
+    },
     Platform: { label: "Platform", props: { ...boxProps } },
     SpinningPlatform: {
         label: "Spinning platform",
@@ -33,7 +44,6 @@ export const MAP_COMPONENTS = {
             pegLength: 0.65,
             pegRadius: 0.12,
             rotationSpeed: 0.6,
-            colorSeed: 1,
             color: "#805238",
         },
     },
@@ -56,6 +66,8 @@ export const MAP_COMPONENTS = {
 export function createMapComponent(component, id, props = {}) {
     const definition = MAP_COMPONENTS[component];
     if (!definition) throw new Error(`Unknown map component: ${component}`);
+    const componentProps = { ...props };
+    delete componentProps.colorSeed;
     return {
         id,
         component,
@@ -64,7 +76,7 @@ export function createMapComponent(component, id, props = {}) {
                 position: component === "Player" ? [0, 5, 0] : [0, 0, 0],
                 rotation: [0, 0, 0],
                 ...definition.props,
-                ...props,
+                ...componentProps,
             }),
         ),
     };
@@ -136,10 +148,7 @@ export function normalizeMapObstacles(input) {
                     key,
                     key === "args",
                 );
-            } else if (
-                (key === "seed" || key === "colorSeed") &&
-                typeof value === "string"
-            ) {
+            } else if (key === "seed" && typeof value === "string") {
                 obstacle.props[key] = value;
             } else if (typeof fallback === "number") {
                 if (!Number.isFinite(value) || Math.abs(value) > 1000000)
@@ -155,6 +164,7 @@ export function normalizeMapObstacles(input) {
                         "scale",
                         "disappearAfter",
                         "respawnAfter",
+                        "fontSize",
                     ].includes(key) &&
                     value <= 0
                 )
@@ -166,6 +176,7 @@ export function normalizeMapObstacles(input) {
                         "tiltSpeed",
                         "maxTilt",
                         "returnSpeed",
+                        "stroke",
                     ].includes(key) &&
                     value < 0
                 )
@@ -174,6 +185,10 @@ export function normalizeMapObstacles(input) {
                     key === "pegCount"
                         ? Math.min(100, Math.floor(value))
                         : value;
+            } else if (typeof fallback === "boolean") {
+                if (typeof value !== "boolean")
+                    throw new Error(`${key} must be true or false.`);
+                obstacle.props[key] = value;
             } else {
                 if (typeof value !== "string")
                     throw new Error(`${key} must be text.`);

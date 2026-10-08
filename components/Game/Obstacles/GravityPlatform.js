@@ -8,7 +8,7 @@ import { DoubleSide, Quaternion, Vector3 } from "three";
 import { useParkourStore } from "@/hooks/useParkourStore";
 import { useStore } from "@/hooks/useStore";
 import { getGroundSupport } from "../groundSupport";
-import { getPlatformColor } from "./platformColor";
+import { usePlatformColor } from "./platformColor";
 
 const TILT_SPEED = 0.7; // Radians per second at the edge.
 const MAX_TILT = Math.PI / 3;
@@ -21,11 +21,12 @@ export default function GravityPlatform({
     position,
     rotation,
     obstacleKey,
-    colorSeed = 1,
+    platformColor,
     tiltSpeed = TILT_SPEED,
     maxTilt = MAX_TILT,
     returnSpeed = RETURN_SPEED,
 }) {
+    const color = usePlatformColor(obstacleKey, platformColor);
     const bodyRef = useRef(null);
     const colliderRef = useRef(null);
     const baseRotation = useRef(null);
@@ -147,9 +148,7 @@ export default function GravityPlatform({
                     receiveShadow
                 >
                     <boxGeometry args={args} />
-                    <meshStandardMaterial
-                        color={getPlatformColor(obstacleKey, colorSeed)}
-                    />
+                    <meshStandardMaterial color={color} />
                 </mesh>
                 <mesh
                     position={[0, args[1] + 0.012, 0]}

@@ -12,7 +12,7 @@ import {
     SRGBColorSpace,
     Vector3,
 } from "three";
-import { getPlatformColor } from "./platformColor";
+import { usePlatformColor } from "./platformColor";
 
 const LOG_AXIS = new Vector3(0, 1, 0);
 const FULL_TURN = Math.PI * 2;
@@ -44,7 +44,6 @@ export default function RotatingLog({
     pegRadius = 0.12,
     rotationSpeed = 0.6, // Radians per second; negative reverses, zero stops.
     obstacleKey = "rotating-log",
-    colorSeed = 1,
     color = "#805238",
 }) {
     const bodyRef = useRef(null);
@@ -59,7 +58,7 @@ export default function RotatingLog({
     const embedDepth = Math.min(pinRadius, logRadius * 0.2);
     const pinHeight = pinLength + embedDepth;
     const count = Math.max(0, Math.floor(pegCount));
-    const logColor = color ?? getPlatformColor(obstacleKey, colorSeed);
+    const logColor = usePlatformColor(obstacleKey, color);
 
     const pegs = useMemo(() => {
         const random = createSeededRandom(seed);

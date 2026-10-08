@@ -1,14 +1,7 @@
 import { createMapComponent } from "./mapComponents";
 
-// Adjust this value to change the repeatable platform colors in the default maps.
-const PLATFORM_COLOR_SEED = 1;
 const obstacle = (id, component, props) =>
-    createMapComponent(component, id, {
-        ...(component.includes("Platform") || component === "RotatingLog"
-            ? { colorSeed: PLATFORM_COLOR_SEED }
-            : {}),
-        ...props,
-    });
+    createMapComponent(component, id, props);
 const platform = (id, position, args = [2.5, 0.5, 2.5]) =>
     obstacle(id, "Platform", { position, args });
 const checkpoint = (name, position, respawnOffset = [0, 0, 0]) =>
@@ -30,7 +23,376 @@ function startingObstacles() {
 export const levelMaps = [
     {
         mapName: "Beginner",
+        colorSeed: 1,
         description: "Learn the basics",
+        mapObstacles: [
+            {
+                id: "player-spawn",
+                component: "Player",
+                props: {
+                    position: [0, 5, 0],
+                    rotation: [0, 0, 0],
+                },
+            },
+            {
+                id: "start-platform-0",
+                component: "Platform",
+                props: {
+                    position: [0, 0, 0],
+                    rotation: [0, 0, 0],
+                    args: [2.5, 0.5, 2.5],
+                },
+            },
+            {
+                id: "start-platform-1",
+                component: "Platform",
+                props: {
+                    position: [0, 0, -4],
+                    rotation: [0, 0, 0],
+                    args: [2.5, 0.5, 2.5],
+                },
+            },
+            {
+                id: "start-platform-2",
+                component: "Platform",
+                props: {
+                    position: [0, 0, -8],
+                    rotation: [0, 0, 0],
+                    args: [2.5, 0.5, 2.5],
+                },
+            },
+            {
+                id: "start-platform-3",
+                component: "Platform",
+                props: {
+                    position: [0, 0, -12],
+                    rotation: [0, 0, 0],
+                    args: [2.5, 0.5, 2.5],
+                },
+            },
+            {
+                id: "start-platform-4",
+                component: "DisappearingPlatform",
+                props: {
+                    position: [0, 0, -16],
+                    rotation: [0, 0, 0],
+                    args: [2.5, 0.5, 2.5],
+                    disappearAfter: 2,
+                    respawnAfter: 5,
+                },
+            },
+            {
+                id: "start-platform-5",
+                component: "Platform",
+                props: {
+                    position: [0, 0, -20],
+                    rotation: [0, 0, 0],
+                    args: [2.5, 0.5, 2.5],
+                },
+            },
+            {
+                id: "start-platform-6",
+                component: "Platform",
+                props: {
+                    position: [0, 0, -24],
+                    rotation: [0, 0, 0],
+                    args: [2.5, 0.5, 2.5],
+                },
+            },
+            {
+                id: "start-platform-7",
+                component: "GravityPlatform",
+                props: {
+                    position: [0, 0, -28],
+                    rotation: [0, 0, 0],
+                    args: [2.5, 0.5, 2.5],
+                    tiltSpeed: 0.7,
+                    maxTilt: 1.0471975511965976,
+                    returnSpeed: 1.5,
+                },
+            },
+            {
+                id: "start-platform-8",
+                component: "Platform",
+                props: {
+                    position: [0, 0, -32],
+                    rotation: [0, 0, 0],
+                    args: [2.5, 0.5, 2.5],
+                },
+            },
+            {
+                id: "start-platform-9",
+                component: "Platform",
+                props: {
+                    position: [0, 0, -36],
+                    rotation: [0, 0, 0],
+                    args: [2.5, 0.5, 2.5],
+                },
+            },
+            {
+                id: "climb-platform-0",
+                component: "Platform",
+                props: {
+                    position: [0, 0, -40],
+                    rotation: [0, 0, 0],
+                    args: [2.5, 0.5, 2.5],
+                },
+            },
+            {
+                id: "climb-platform-1",
+                component: "Platform",
+                props: {
+                    position: [0, 0.5, -44],
+                    rotation: [0, 0, 0],
+                    args: [2.5, 0.5, 2.5],
+                },
+            },
+            {
+                id: "climb-platform-2",
+                component: "Platform",
+                props: {
+                    position: [0, 1, -48],
+                    rotation: [0, 0, 0],
+                    args: [2.5, 0.5, 2.5],
+                },
+            },
+            {
+                id: "climb-platform-3",
+                component: "Platform",
+                props: {
+                    position: [0, 1.5, -52],
+                    rotation: [0, 0, 0],
+                    args: [2.5, 0.5, 2.5],
+                },
+            },
+            {
+                id: "climb-platform-4",
+                component: "Platform",
+                props: {
+                    position: [0, 2, -56],
+                    rotation: [0, 0, 0],
+                    args: [2.5, 0.5, 2.5],
+                },
+            },
+            {
+                id: "climb-platform-5",
+                component: "Platform",
+                props: {
+                    position: [0, 2.5, -60],
+                    rotation: [0, 0, 0],
+                    args: [2.5, 0.5, 2.5],
+                },
+            },
+            {
+                id: "climb-platform-6",
+                component: "Platform",
+                props: {
+                    position: [0, 3, -64],
+                    rotation: [0, 0, 0],
+                    args: [2.5, 0.5, 2.5],
+                },
+            },
+            {
+                id: "climb-platform-7",
+                component: "Platform",
+                props: {
+                    position: [0, 3.5, -68],
+                    rotation: [0, 0, 0],
+                    args: [2.5, 0.5, 2.5],
+                },
+            },
+            {
+                id: "climb-platform-8",
+                component: "Platform",
+                props: {
+                    position: [0, 4, -72],
+                    rotation: [0, 0, 0],
+                    args: [2.5, 0.5, 2.5],
+                },
+            },
+            {
+                id: "climb-platform-9",
+                component: "Platform",
+                props: {
+                    position: [0, 4.5, -76],
+                    rotation: [0, 0, 0],
+                    args: [2.5, 0.5, 2.5],
+                },
+            },
+            {
+                id: "checkpoint-1",
+                component: "Checkpoint",
+                props: {
+                    position: [0, 6, -76],
+                    rotation: [0, 0, 0],
+                    args: [2.5, 2.5, 2.5],
+                    name: "1",
+                    respawnOffset: [0, -1, 0],
+                },
+            },
+            {
+                id: "flag-1",
+                component: "Flag",
+                props: {
+                    position: [0, 4.5, -76],
+                    rotation: [0, 0, 0],
+                    scale: 2,
+                },
+            },
+            {
+                id: "turn-platform-0",
+                component: "Platform",
+                props: {
+                    position: [-5, 5, -76],
+                    rotation: [0, 0, 0],
+                    args: [2.5, 0.5, 2.5],
+                },
+            },
+            {
+                id: "turn-platform-1",
+                component: "Platform",
+                props: {
+                    position: [-11, 5.5, -76],
+                    rotation: [0, 0, 0],
+                    args: [2.5, 0.5, 2.5],
+                },
+            },
+            {
+                id: "turn-platform-2",
+                component: "Platform",
+                props: {
+                    position: [-17, 6, -76],
+                    rotation: [0, 0, 0],
+                    args: [2.5, 0.5, 2.5],
+                },
+            },
+            {
+                id: "turn-platform-3",
+                component: "Platform",
+                props: {
+                    position: [-23, 6.5, -76],
+                    rotation: [0, 0, 0],
+                    args: [2.5, 0.5, 2.5],
+                },
+            },
+            {
+                id: "turn-platform-4",
+                component: "Platform",
+                props: {
+                    position: [-29, 7, -76],
+                    rotation: [0, 0, 0],
+                    args: [2.5, 0.5, 2.5],
+                },
+            },
+            {
+                id: "turn-platform-5",
+                component: "Platform",
+                props: {
+                    position: [-35, 7.5, -76],
+                    rotation: [0, 0, 0],
+                    args: [2.5, 0.5, 2.5],
+                },
+            },
+            {
+                id: "turn-platform-6",
+                component: "Platform",
+                props: {
+                    position: [-41, 8, -76],
+                    rotation: [0, 0, 0],
+                    args: [2.5, 0.5, 2.5],
+                },
+            },
+            {
+                id: "turn-platform-7",
+                component: "Platform",
+                props: {
+                    position: [-47, 8.5, -76],
+                    rotation: [0, 0, 0],
+                    args: [2.5, 0.5, 2.5],
+                },
+            },
+            {
+                id: "turn-platform-8",
+                component: "Platform",
+                props: {
+                    position: [-53, 9, -76],
+                    rotation: [0, 0, 0],
+                    args: [2.5, 0.5, 2.5],
+                },
+            },
+            {
+                id: "turn-platform-9",
+                component: "Platform",
+                props: {
+                    position: [-59, 9.5, -76],
+                    rotation: [0, 0, 0],
+                    args: [2.5, 0.5, 2.5],
+                },
+            },
+            {
+                id: "spring-platform-1",
+                component: "SpringPlatform",
+                props: {
+                    position: [-56, 10, 0],
+                    rotation: [0, 0, 0],
+                    args: [2.5, 0.5, 2.5],
+                    force: 15,
+                },
+            },
+            {
+                id: "spring-platform-2",
+                component: "SpringPlatform",
+                props: {
+                    position: [-59, 20, 0],
+                    rotation: [0, 0, 0],
+                    args: [2.5, 0.5, 2.5],
+                    force: 15,
+                },
+            },
+            {
+                id: "spring-platform-3",
+                component: "SpringPlatform",
+                props: {
+                    position: [-62, 30, 0],
+                    rotation: [0, 0, 0],
+                    args: [2.5, 0.5, 2.5],
+                    force: 15,
+                },
+            },
+            {
+                id: "Text-ac00b2a4",
+                component: "Text",
+                props: {
+                    position: [0, 3.289108, -5.045532],
+                    rotation: [0, 0, 0],
+                    text: "Welcome",
+                    fontSize: 1,
+                    color: "#ffffff",
+                    stroke: 0.03,
+                    strokeColor: "#000000",
+                    billboard: false,
+                },
+            },
+            {
+                id: "Text-855941a9",
+                component: "Text",
+                props: {
+                    position: [-5, 7.860233, -76.372416],
+                    rotation: [0, 1.570796, 0],
+                    text: "Sprinting Required",
+                    fontSize: 1,
+                    color: "#ffffff",
+                    stroke: 0.03,
+                    strokeColor: "#000000",
+                    billboard: false,
+                },
+            },
+        ],
+    },
+    {
+        mapName: "Intermediate",
+        colorSeed: 1,
+        description: "Heating up",
         mapObstacles: [
             obstacle("player-spawn", "Player", { position: [0, 5, 0] }),
             ...Array.from({ length: 10 }, (_, i) =>
@@ -121,18 +483,15 @@ export const levelMaps = [
         ],
     },
     {
-        mapName: "Intermediate",
-        description: "Heating up",
-        mapObstacles: startingObstacles(),
-    },
-    {
         mapName: "Advanced",
+        colorSeed: 1,
         description: "You shall not pass",
         mapObstacles: startingObstacles(),
     },
     {
         mapName: "Expert",
-        description: "You shall not pass",
+        colorSeed: 1,
+        description: "Good luck",
         mapObstacles: startingObstacles(),
     },
 ];
@@ -144,5 +503,9 @@ export function getLevelMap(mapName, savedMaps = []) {
 }
 
 export function createCustomMap() {
-    return { mapName: "Custom", mapObstacles: startingObstacles() };
+    return {
+        mapName: "Custom",
+        colorSeed: 1,
+        mapObstacles: startingObstacles(),
+    };
 }

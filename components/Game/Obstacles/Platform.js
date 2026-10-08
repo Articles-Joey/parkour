@@ -1,6 +1,6 @@
 import { CuboidCollider, RigidBody } from "@react-three/rapier";
 import DisappearingPlatform from "./DisappearingPlatform";
-import { getPlatformColor } from "./platformColor";
+import { usePlatformColor } from "./platformColor";
 
 export default function Platform({
     args,
@@ -8,8 +8,9 @@ export default function Platform({
     rotation,
     disappearing,
     obstacleKey,
-    colorSeed = 1,
+    platformColor,
 }) {
+    const color = usePlatformColor(obstacleKey, platformColor);
     if (disappearing) {
         return (
             <DisappearingPlatform
@@ -17,7 +18,7 @@ export default function Platform({
                 position={position}
                 rotation={rotation}
                 obstacleKey={obstacleKey}
-                colorSeed={colorSeed}
+                platformColor={platformColor}
             />
         );
     }
@@ -35,9 +36,7 @@ export default function Platform({
             />
             <mesh castShadow>
                 <boxGeometry args={args} />
-                <meshStandardMaterial
-                    color={getPlatformColor(obstacleKey, colorSeed)}
-                />
+                <meshStandardMaterial color={color} />
             </mesh>
         </RigidBody>
     );

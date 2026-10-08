@@ -25,6 +25,7 @@ export default function ParkourGamePage() {
     const mapParam = searchParams.get("map");
     const componentsParam = searchParams.get("components");
     const editParam = searchParams.get("edit");
+    const colorSeedParam = searchParams.get("colorSeed");
     const hydrated = useStore((state) => state._hasHydrated);
     const debug = useStore((state) => state.debug);
     const level = useLevelEditorStore((state) => state.level);
@@ -40,8 +41,13 @@ export default function ParkourGamePage() {
         if (hydrated)
             useLevelEditorStore
                 .getState()
-                .initializeRoute(mapParam, componentsParam, editParam);
-    }, [hydrated, mapParam, componentsParam, editParam]);
+                .initializeRoute(
+                    mapParam,
+                    componentsParam,
+                    editParam,
+                    colorSeedParam,
+                );
+    }, [hydrated, mapParam, componentsParam, editParam, colorSeedParam]);
     useEffect(() => () => useLevelEditorStore.getState().clearSession(), []);
     useEffect(() => {
         if (!debug && editMode && !isCustom)

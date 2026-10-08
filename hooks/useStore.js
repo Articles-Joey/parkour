@@ -17,6 +17,13 @@ export const useStore = create()(
             // Built-in map edits and progress survive reloads; Custom layouts live in URLs.
             levelMaps: [],
             checkpointProgress: {},
+            resetLevelMaps: () => set({ levelMaps: [] }),
+            removeSavedLevelMap: (mapName) =>
+                set((state) => ({
+                    levelMaps: state.levelMaps.filter(
+                        (map) => map.mapName !== mapName,
+                    ),
+                })),
             saveLevelMap: (level) => {
                 if (
                     !defaultLevelMaps.some(
@@ -114,7 +121,13 @@ export const useStore = create()(
                 return {
                     ...state,
                     levelMaps: Array.isArray(state.levelMaps)
-                        ? state.levelMaps
+                        ? state.levelMaps.flatMap((level) => {
+                              try {
+                                  return [normalizeLevelMap(level)];
+                              } catch {
+                                  return [];
+                              }
+                          })
                         : [],
                     checkpointProgress:
                         state.checkpointProgress &&

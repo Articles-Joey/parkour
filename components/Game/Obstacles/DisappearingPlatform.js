@@ -7,7 +7,7 @@ import { useRef } from "react";
 import { useParkourStore } from "@/hooks/useParkourStore";
 import { useStore } from "@/hooks/useStore";
 import { getGroundSupport } from "../groundSupport";
-import { getPlatformColor } from "./platformColor";
+import { usePlatformColor } from "./platformColor";
 
 // These durations are in seconds, measured using the physics timestep.
 const DISAPPEAR_AFTER = 2;
@@ -18,10 +18,11 @@ export default function DisappearingPlatform({
     position,
     rotation,
     obstacleKey,
-    colorSeed = 1,
+    platformColor,
     disappearAfter = DISAPPEAR_AFTER,
     respawnAfter = RESPAWN_AFTER,
 }) {
+    const color = usePlatformColor(obstacleKey, platformColor);
     const colliderRef = useRef(null);
     const meshRef = useRef(null);
     const materialRef = useRef(null);
@@ -90,7 +91,7 @@ export default function DisappearingPlatform({
                 <boxGeometry args={args} />
                 <meshStandardMaterial
                     ref={materialRef}
-                    color={getPlatformColor(obstacleKey, colorSeed)}
+                    color={color}
                     transparent
                     emissive="#f59e0b"
                     emissiveIntensity={0}
