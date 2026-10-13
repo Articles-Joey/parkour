@@ -28,7 +28,10 @@ export default function SpinningPlatform({
                 args={args.map((size) => size / 2)}
                 friction={0.3}
             />
-            <mesh castShadow>
+            <mesh
+                castShadow
+                receiveShadow
+            >
                 <boxGeometry args={args} />
                 <meshStandardMaterial color={color} />
             </mesh>

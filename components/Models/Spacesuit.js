@@ -11,12 +11,26 @@ import { SkeletonUtils } from "three-stdlib";
 
 const link = "/models/Spacesuit-transformed.glb";
 
-function SpacesuitModel({ action, speed = 1, ...props }) {
+function SpacesuitModel({ action, speed = 1, shadowOnly = false, ...props }) {
     const group = React.useRef();
     const { scene, animations } = useGLTF(link);
     const clone = React.useMemo(() => SkeletonUtils.clone(scene), [scene]);
-    const { nodes, materials } = useGraph(clone);
+    const { nodes, materials: sourceMaterials } = useGraph(clone);
+    const materials = React.useMemo(
+        () => ({
+            PaletteMaterial001: sourceMaterials.PaletteMaterial001.clone(),
+        }),
+        [sourceMaterials.PaletteMaterial001],
+    );
     const { actions } = useAnimations(animations, group);
+
+    useEffect(() => {
+        // Hide the suit in first person while retaining its shadow silhouette.
+        materials.PaletteMaterial001.colorWrite = !shadowOnly;
+        materials.PaletteMaterial001.depthWrite = !shadowOnly;
+    }, [materials, shadowOnly]);
+
+    useEffect(() => () => materials.PaletteMaterial001.dispose(), [materials]);
 
     useEffect(() => {
         // console.log("Actions", actions)

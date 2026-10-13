@@ -133,40 +133,42 @@ export default function ParkourGamePage() {
                     }}
                 >
                     {level && <GameCanvas key={sceneKey} />}
-                    {loadError ? (
-                        <Box
-                            role="alert"
-                            sx={{
-                                position: "absolute",
-                                inset: 0,
-                                p: 3,
-                                bgcolor: "background.paper",
-                            }}
-                        >
-                            {loadError}
-                            <Box>
-                                <Link href="/">Back to maps</Link>
-                            </Box>
-                        </Box>
-                    ) : (
-                        level && (
+                    <Box className="level-name">
+                        {loadError ? (
                             <Box
+                                role="alert"
                                 sx={{
                                     position: "absolute",
-                                    top: 16,
-                                    left: "50%",
-                                    transform: "translateX(-50%)",
-                                    zIndex: 2,
-                                    px: 1,
+                                    inset: 0,
+                                    p: 3,
                                     bgcolor: "background.paper",
-                                    pointerEvents: "none",
                                 }}
                             >
-                                {level.mapName}
-                                {editMode ? " · Edit mode" : ""}
+                                {loadError}
+                                <Box>
+                                    <Link href="/">Back to maps</Link>
+                                </Box>
                             </Box>
-                        )
-                    )}
+                        ) : (
+                            level && (
+                                <Box
+                                    sx={{
+                                        position: "absolute",
+                                        top: 16,
+                                        left: "50%",
+                                        transform: "translateX(-50%)",
+                                        zIndex: 2,
+                                        px: 1,
+                                        bgcolor: "background.paper",
+                                        pointerEvents: "none",
+                                    }}
+                                >
+                                    {level.mapName}
+                                    {editMode ? " · Edit mode" : ""}
+                                </Box>
+                            )
+                        )}
+                    </Box>
                     {!editMode && <CameraZoomIndicator />}
                     {!editMode && <RopeSwingIndicator />}
                 </Box>

@@ -2,7 +2,7 @@
 
 Parkour web game build with React Three Fiber and react-three/rapier.
 
-![Preview](public/img/preview.webp)
+![Preview](public/img/previews/preview.webp)
 
 ## Getting Started
 
@@ -48,6 +48,10 @@ Obstacle components live in `components/Game/Obstacles`. Add them to a map's `ma
 | **Text**                 | Placeable 3D text with editable content, position, rotation, `fontSize`, `color`, `stroke` width, and `strokeColor`. Toggle `billboard` to face the camera.            |
 
 For map building, enable Debug Mode and press **G** to toggle fly mode. This setting persists in the Zustand store. Fly with WASD or arrow keys, rise with Space, descend with C, and hold Shift to move faster.
+
+## Previews
+
+![Preview](public/img/previews/dark.webp)
 
 ## Attributions
 

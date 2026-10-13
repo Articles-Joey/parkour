@@ -144,8 +144,7 @@ function PlayerBase({ position = [0, 5, 0] }) {
         elapsedTime.current += world.timestep;
 
         const store = useParkourStore.getState();
-        const { debug, flyMode } = useStore.getState();
-        const flying = debug && flyMode;
+        const { flyMode: flying } = useStore.getState();
         const gravityScale = flying ? 0 : 1;
         const collisionGroups = flying ? 0 : PLAYER_COLLISION_GROUPS;
         const modeChanged =
@@ -480,8 +479,8 @@ function PlayerBase({ position = [0, 5, 0] }) {
         if (!body) return;
 
         const position = body.translation();
-        const { debug, flyMode } = useStore.getState();
-        if (position.y < -10 && !(debug && flyMode)) {
+        const { flyMode } = useStore.getState();
+        if (position.y < -10 && !flyMode) {
             let latestCheckpoint = useParkourStore.getState().spawnPosition;
             for (const checkpoint of useParkourStore.getState().checkpoints) {
                 if (!checkpoint.locked && checkpoint.location.length === 3) {
@@ -513,8 +512,7 @@ function PlayerBase({ position = [0, 5, 0] }) {
             useParkourStore.getState();
         // Follow the interpolated visual transform after Rapier has updated it.
         visualRef.current.getWorldPosition(playerPosition);
-        const { debug, flyMode } = useStore.getState();
-        const flying = debug && flyMode;
+        const { flyMode: flying } = useStore.getState();
         const cameraHeight = playerPosition.y / (crouch && !flying ? 2 : 1);
         if (thirdPerson) {
             playerCenter.set(
@@ -579,10 +577,10 @@ function PlayerBase({ position = [0, 5, 0] }) {
                 <group
                     ref={modelRef}
                     position={[0, -0.45, 0]}
-                    visible={isThirdPerson}
                 >
                     <SpacesuitModel
                         scale={0.5}
+                        shadowOnly={!isThirdPerson}
                         action={animation.action}
                         speed={animation.speed}
                     />

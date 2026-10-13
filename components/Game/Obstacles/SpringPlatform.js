@@ -29,14 +29,9 @@ export default function SpringPlatform({
         const collider = colliderRef.current;
         const { rigidBody: player, ropeAttachment } =
             useParkourStore.getState();
-        const { debug, flyMode } = useStore.getState();
+        const { flyMode } = useStore.getState();
         const playerCollider = player?.isValid() ? player.collider(0) : null;
-        if (
-            !collider ||
-            !playerCollider ||
-            (debug && flyMode) ||
-            ropeAttachment
-        ) {
+        if (!collider || !playerCollider || flyMode || ropeAttachment) {
             launched.current = false;
             return;
         }

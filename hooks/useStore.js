@@ -59,12 +59,11 @@ export const useStore = create()(
             // Debug already comes from the shared slice. Both flags are persisted.
             flyMode: false,
             setFlyMode: (enabled) => {
-                set({ flyMode: Boolean(enabled) && get().debug });
+                set({ flyMode: Boolean(enabled) });
             },
             toggleFlyMode: () => get().setFlyMode(!get().flyMode),
             setDebug: (enabled) => {
-                const debug = Boolean(enabled);
-                set((state) => ({ debug, flyMode: debug && state.flyMode }));
+                set({ debug: Boolean(enabled) });
             },
             toggleDebug: () => get().setDebug(!get().debug),
 
@@ -135,7 +134,7 @@ export const useStore = create()(
                         !Array.isArray(state.checkpointProgress)
                             ? state.checkpointProgress
                             : {},
-                    flyMode: Boolean(state.debug && state.flyMode),
+                    flyMode: Boolean(state.flyMode),
                 };
             },
             onRehydrateStorage: (state) => {

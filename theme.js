@@ -55,6 +55,10 @@ export function createAppTheme(mode = "dark") {
                         left: "initial !important",
                         zIndex: 4,
                     },
+                    '[data-articles-dev-box-screenshot-mode="enabled"] .stats-overlay, [data-articles-dev-box-screenshot-mode="enabled"] .sprint-meter, [data-articles-dev-box-screenshot-mode="enabled"] .custom-map-url-meter, [data-articles-dev-box-screenshot-mode="enabled"] .level-name':
+                        {
+                            display: "none !important",
+                        },
                 }),
             },
         },

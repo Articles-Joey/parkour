@@ -46,9 +46,9 @@ export default function GravityPlatform({
 
         const { rigidBody: player, ropeAttachment } =
             useParkourStore.getState();
-        const { debug, flyMode } = useStore.getState();
+        const { flyMode } = useStore.getState();
         let occupied = false;
-        if (player?.isValid() && !(debug && flyMode) && !ropeAttachment) {
+        if (player?.isValid() && !flyMode && !ropeAttachment) {
             const support = getGroundSupport(world, player.collider(0), 0.1);
             localPlayer
                 .copy(player.translation())

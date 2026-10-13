@@ -86,11 +86,11 @@ export const useParkourStore = create((set, get) => ({
     },
     requestRopeGrab: (ropeBody, length, radius) => {
         const { rigidBody, ropeAttachment, ropeGrabBlockedUntil } = get();
-        const { debug, flyMode } = useStore.getState();
+        const { flyMode } = useStore.getState();
         if (
             !rigidBody ||
             ropeAttachment ||
-            (debug && flyMode) ||
+            flyMode ||
             Date.now() < ropeGrabBlockedUntil
         )
             return;

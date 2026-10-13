@@ -38,9 +38,8 @@ export default function DisappearingPlatform({
         if (phase.current === "ready") {
             const { rigidBody: player, ropeAttachment } =
                 useParkourStore.getState();
-            const { debug, flyMode } = useStore.getState();
-            if (!player?.isValid() || (debug && flyMode) || ropeAttachment)
-                return;
+            const { flyMode } = useStore.getState();
+            if (!player?.isValid() || flyMode || ropeAttachment) return;
             // Side contacts and other obstacles cannot start the countdown.
             const support = getGroundSupport(world, player.collider(0));
             if (support?.handle !== collider.handle || player.linvel().y > 0.1)

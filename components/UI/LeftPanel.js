@@ -43,7 +43,10 @@ export default function LeftPanelContent() {
                     sx={{
                         p: "0.5rem",
                         "&:last-child": { pb: "0.5rem" },
-                        display: "flex",
+                        display:
+                            process.env.NODE_ENV === "development"
+                                ? "flex"
+                                : "none",
                         flexWrap: "wrap",
                     }}
                 >

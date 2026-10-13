@@ -56,8 +56,8 @@ export const useKeyboard = () => {
             )
                 return;
 
-            const { debug, toggleFlyMode } = useStore.getState();
-            if (debug) {
+            const { debug, flyMode, toggleFlyMode } = useStore.getState();
+            if (debug || flyMode) {
                 e.preventDefault();
                 toggleFlyMode();
             }
